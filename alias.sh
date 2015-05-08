@@ -24,22 +24,13 @@ function dip() {
     docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
 }
 
-function one() {
-    echo "YOU TYPED $1"
-    if [ -z "$1" ]; then
-        echo "EMPTY"
-    else
-        echo "FULL"
-    fi
-}
-
 ########################################################################
 #Git Stuff
 ########################################################################
 function gacp() {
     if [ -z "$1" ]; then
-        echo "ERROR: You must specify a comment\ne.g. gacp This is a comment"
-        exit 1   
+        echo "ERROR: You must specify a comment"
+        echo "e.g. gacp \"This is a comment\""
     else
         git add .
         git commit -m "$1"
