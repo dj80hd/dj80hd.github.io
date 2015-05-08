@@ -1,5 +1,6 @@
-
-#docker functions
+########################################################################
+#  docker functions
+########################################################################
 function d() { sudo docker "$@" ;}
 function de() { sudo docker exec -t "$@" ;}
 function di() { sudo docker exec -i -t $1 bash ;}
@@ -21,6 +22,19 @@ function ds() {
 
 function dip() { 
     docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
+}
+
+########################################################################
+#Git Stuff
+########################################################################
+function gacp() {
+    if [-z "$1"]; then
+        echo "ERROR: You must specify a comment\ne.g. gacp This is a comment"
+        return
+    fi
+    git add .
+    git commit -m "$1"
+    git push origin master
 }
 
 
