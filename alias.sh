@@ -56,6 +56,7 @@ function gacp() {
 #my aliases
 alias copy='cp'
 alias h='history'
+function pg() { ps aux |grep $1 ;}
 
 #my vars
 LH=http://127.0.0.1
