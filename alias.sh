@@ -3,7 +3,7 @@
 ########################################################################
 function d() { sudo docker "$@" ;}
 function de() { sudo docker exec -t "$@" ;}
-function di() { sudo docker exec -i -t $1 bash ;}
+function dei() { sudo docker exec -i -t $1 bash ;}
 function dr() { sudo docker rm $1 ;}
 
 #Show all docker process, optional input match string
@@ -12,6 +12,15 @@ function dpa() {
         sudo docker ps -a 
     else
         sudo docker ps -a |grep $1
+    fi
+}
+
+#Show all docker images with optional grep param
+function di() { 
+    if [ -z "$1" ]; then
+        sudo docker images
+    else
+        sudo docker images | grep $1
     fi
 }
 
