@@ -96,6 +96,11 @@ function gacp() {
 ########################################################################
 # Vagrant
 ########################################################################
+# Alias for vagrant global status
+function vgs() {
+    vagrant global-status
+}
+
 # Halt all running vagrant instances
 function vhall() {
     for b in `vagrant global-status |grep running |cut -d' ' -f 1` ; do 
@@ -113,6 +118,7 @@ alias activate='source venv/bin/activate'
 alias copy='cp'
 alias h='history'
 function pg() { ps aux |grep $1 ;}
+function hg() { history |grep $1 ;}
 
 #my vars
 LH=http://127.0.0.1
