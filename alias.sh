@@ -1,12 +1,47 @@
 ########################################################################
+#  80HD Time Saving Aliases
+#  Tip: To see all active functions and aliases use typeset -f and alias
+########################################################################
+
+
+########################################################################
 #  docker functions
 ########################################################################
+
+#- Conveniece method to run docer commands as sudo
 function d() { sudo docker "$@" ;}
+
+#- Conveniece method to execute a command in a container
 function de() { sudo docker exec -t "$@" ;}
+
+#- Conveniece method to create an interactive shell in a container
 function dei() { sudo docker exec -i -t $1 bash ;}
+
+#- Conveniece method to remove a container                         
 function dr() { sudo docker rm $1 ;}
 
-#Show all docker process, optional input match string
+#- Conveniece method to show active containers                     
+function dp() { sudo docker ps ;}
+
+#- Conveniece method to show logs in a given container             
+function dl() { sudo docker logs $1 ;}
+
+#- Show report of volumes in each image (FIXME - IMPLEMENT)        
+function dv() { 
+    #FIXME - Do this for each image
+    docker inspect -f "{{ .Volumes }}"
+}
+
+#Backup all volumes of a given container.
+#FIXME - Implement. dbv foo should leave a file foo_backup.tar in local dir
+function dbv() {
+   echo "ERROR: NOT IMPLEMENTED!"
+# for each $dir
+# docker run --rm --volumes-from $1 -v $(pwd):/backup ubuntu tar cvf /backup/$1_backup.tar $dir
+}
+
+#- Show all docker process, optional input match string
+#- e.g. dpa flasky
 function dpa() { 
     if [ -z "$1" ]; then
         sudo docker ps -a 
@@ -15,7 +50,7 @@ function dpa() {
     fi
 }
 
-#Show all docker images with optional grep param
+#- Show all docker images with optional grep param
 function di() { 
     if [ -z "$1" ]; then
         sudo docker images
@@ -24,17 +59,15 @@ function di() {
     fi
 }
 
-function dp() { sudo docker ps ;}
-function dl() { sudo docker logs $1 ;}
 
-#Stop any containers matching input
+#- Stop any containers matching input
 function dps() {
     for p in `sudo docker ps|grep $1 |cut -d' ' -f 1` ; do 
         sudo docker stop $p 
     done
 }
 
-#Stop and remove any containers matching input
+#- Stop and remove any containers matching input param
 function dprm() {
     for p in `sudo docker ps -a|grep $1 |cut -d' ' -f 1` ; do 
         sudo docker stop $p 
@@ -60,7 +93,21 @@ function gacp() {
     fi
 }
 
+########################################################################
+# Vagrant
+########################################################################
+# Halt all running vagrant instances
+function vhall() {
+    for b in `vagrant global-status |grep running |cut -d' ' -f 1` ; do 
+        vagrant halt $b
+    done
+}
 
+########################################################################
+# Misc
+########################################################################
+#python virtual envs
+alias activate='source venv/bin/activate'
 
 #my aliases
 alias copy='cp'
@@ -70,3 +117,10 @@ function pg() { ps aux |grep $1 ;}
 #my vars
 LH=http://127.0.0.1
 R=~/repos
+
+########################################################################
+# Alias management
+########################################################################
+# Reload these aliases
+alias aupdate='curl -s -o alias.txt http://dj80hd.github.io/alias.sh ; source alias.txt ; rm alias.txt'
+
