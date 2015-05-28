@@ -133,6 +133,12 @@ R=~/repos
 #- find and grep                                                  
 function fg() { grep -r $1 . ;}
 function fp() { find . -print |grep $1 ;}
+
+function venv {
+    virtualenv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+}
 ########################################################################
 # Alias management
 ########################################################################
