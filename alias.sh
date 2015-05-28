@@ -23,6 +23,9 @@ function dr() { sudo docker rm $1 ;}
 #- Conveniece method to show active containers                     
 function dp() { sudo docker ps ;}
 
+#- Conveniece method to build a container                          
+function db() { sudo docker build -it $1 . ;}
+
 #- Conveniece method to show logs in a given container             
 function dl() { sudo docker logs $1 ;}
 
