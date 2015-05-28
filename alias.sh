@@ -85,6 +85,9 @@ function dip() {
 ########################################################################
 #Git Stuff
 ########################################################################
+function gpom() {
+    git pull origin master
+}
 function gacp() {
     if [ -z "$1" ]; then
         echo "ERROR: You must specify a comment"
