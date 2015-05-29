@@ -31,8 +31,8 @@ function dl() { sudo docker logs $1 ;}
 
 #- Show report of volumes in each image (FIXME - IMPLEMENT)        
 function dv() { 
-    #FIXME - Do this for each image
-    docker inspect -f "{{ .Volumes }}"
+    #FIXME - Do this for each image if no param
+    docker inspect -f \"{{ .Volumes }}\" $1
 }
 
 #Backup all volumes of a given container.
@@ -87,6 +87,9 @@ function dip() {
 ########################################################################
 function gpom() {
     git pull origin master
+}
+function gln() {
+    git log -n $1
 }
 function gacp() {
     if [ -z "$1" ]; then
