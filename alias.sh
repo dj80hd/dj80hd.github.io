@@ -25,6 +25,7 @@ function dp() { sudo docker ps ;}
 
 #- Conveniece method to build a container                          
 function db() { sudo docker build -t $1 . ;}
+function dbnc() { sudo docker build --no-cache -t $1 . ;}
 
 #- Conveniece method to show logs in a given container             
 function dl() { sudo docker logs $1 ;}
