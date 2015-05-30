@@ -134,6 +134,7 @@ function pg() { ps aux |grep $1 ;}
 function hg() { history |grep $1 ;}
 function psa() { ps aux |grep $1 ;}
 function b() { cd .. ;}
+function chx() { chmod +x *sh ;}
 
 #my vars
 LH=http://127.0.0.1
