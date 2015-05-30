@@ -3,6 +3,9 @@
 #  Tip: To see all active functions and aliases use typeset -f and alias
 ########################################################################
 
+#TODO
+# - something to save last command to file for reference
+# - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
 ########################################################################
 #  docker functions
