@@ -93,7 +93,11 @@ function gpom() {
     git pull origin master
 }
 function gln() {
-    git log -n $1
+    if [ -z "$1" ]; then
+        git log -n 1
+    else
+        git log -n $1
+    fi
 }
 function gacp() {
     if [ -z "$1" ]; then
