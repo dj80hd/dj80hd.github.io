@@ -115,7 +115,7 @@ function gacp() {
         echo "ERROR: You must specify a comment"
         echo "e.g. gacp \"This is a comment\""
     else
-        git add .
+        git add -A .
         git commit -m "$1"
         git push origin master
     fi
