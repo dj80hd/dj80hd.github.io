@@ -95,6 +95,7 @@ function dhostport() {
 ########################################################################
 #- Conveniece method to run ansible-playbook
 function anp() { ansible-playbook "$@" ;}
+function anpl() { ansible-playbook -c local "$@" ;}
 
 
 ########################################################################
