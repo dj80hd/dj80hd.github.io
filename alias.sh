@@ -86,6 +86,17 @@ function dip() {
     docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
 }
 
+function dhostport() {
+    docker inspect $1 |grep HostPort | cut -d '"' -f 4
+}
+
+########################################################################
+# Ansible Stuff
+########################################################################
+#- Conveniece method to run ansible-playbook
+function anp() { ansible-playbook "$@" ;}
+
+
 ########################################################################
 #Git Stuff
 ########################################################################
