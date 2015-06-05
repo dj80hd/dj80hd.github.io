@@ -33,6 +33,9 @@ function dbnc() { sudo docker build --no-cache -t $1 . ;}
 #- Conveniece method to show logs in a given container             
 function dl() { sudo docker logs $1 ;}
 
+#- Conveniece method to run an interactive disposable container w/ /tmp mapped
+function drt() { docker run --rm -v /tmp:/tmp -it ubuntu:trusty ;}
+
 #- Show report of volumes in each image (FIXME - IMPLEMENT)        
 function dv() { 
     #FIXME - Do this for each image if no param
@@ -146,7 +149,14 @@ function hg() { history |grep $1 ;}
 function psa() { ps aux |grep $1 ;}
 function b() { cd .. ;}
 function chx() { chmod +x *sh ;}
-
+function mkcd {
+    if [ -z "$1" ]; then
+        echo "You must enter a directory to be created."
+    else
+        mkdir -p $1 
+        cd $1
+    fi   
+}
 #my vars
 LH=http://127.0.0.1
 R=~/repos
