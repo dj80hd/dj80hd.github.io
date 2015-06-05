@@ -98,6 +98,7 @@ function dhostport() {
 ########################################################################
 #- Conveniece method to run ansible-playbook
 function anp() { ansible-playbook "$@" ;}
+function anpl() { ansible-playbook -c local "$@" ;}
 
 
 ########################################################################
@@ -107,14 +108,18 @@ function gpom() {
     git pull origin master
 }
 function gln() {
-    git log -n $1
+    if [ -z "$1" ]; then
+        git log -n 1
+    else
+        git log -n $1
+    fi
 }
 function gacp() {
     if [ -z "$1" ]; then
         echo "ERROR: You must specify a comment"
         echo "e.g. gacp \"This is a comment\""
     else
-        git add .
+        git add -A .
         git commit -m "$1"
         git push origin master
     fi
