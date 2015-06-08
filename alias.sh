@@ -35,6 +35,7 @@ function dl() { sudo docker logs $1 ;}
 
 #- Conveniece method to run an interactive disposable container w/ /tmp mapped
 function drt() { docker run --rm -v /tmp:/tmp -it ubuntu:trusty ;}
+function drtp() { docker run --rm -v /tmp:/tmp -it dj80hd/privates:trustyplus ;}
 
 #- Show report of volumes in each image (FIXME - IMPLEMENT)        
 function dv() { 
