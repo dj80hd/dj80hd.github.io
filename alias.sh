@@ -152,7 +152,7 @@ alias copy='cp'
 alias h='history'
 function pg() { ps aux |grep $1 ;}
 function hg() { history |grep $1 ;}
-function psa() { ps aux |grep $1 ;}
+function psa() { ps aux |grep $1 | grep -v grep ;}
 function b() { cd .. ;}
 function chx() { chmod +x *sh ;}
 function mkcd {
