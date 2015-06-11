@@ -163,6 +163,9 @@ function mkcd {
         cd $1
     fi   
 }
+function sbrc() {
+    source ~/.bashrc
+}
 #my vars
 LH=http://127.0.0.1
 R=~/repos
