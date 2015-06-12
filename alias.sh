@@ -177,7 +177,13 @@ LH=http://127.0.0.1
 R=~/repos
 
 #- find and grep                                                  
-function fg() { grep -r $1 . ;}
+function fg() { 
+    if [ -z "$2" ]; then
+        grep -r $1 . 
+    else
+        grep --include="*.$2" -r $1 .
+    fi
+}
 function fp() { find . -print |grep $1 ;}
 
 function venv {
