@@ -126,6 +126,11 @@ function gacp() {
     fi
 }
 
+function gitme() {
+    git config --global user.email "werwath@gmail.com"
+    git config --global user.name "80HD"           
+}
+
 ########################################################################
 # Vagrant
 ########################################################################
@@ -145,7 +150,7 @@ function vhall() {
 # Misc
 ########################################################################
 function aptall() {
-    dpkg --get-selections | grep -v deinstall
+    dpkg -l
 }
 ########################################################################
 # Misc
