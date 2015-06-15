@@ -108,6 +108,10 @@ function anpl() { ansible-playbook -c local "$@" ;}
 function gpom() {
     git pull origin master
 }
+
+function blameall() {
+    for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do git --no-pager blame $f ; done
+}
 function gln() {
     if [ -z "$1" ]; then
         git log -n 1
