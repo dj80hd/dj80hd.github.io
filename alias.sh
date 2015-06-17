@@ -173,7 +173,7 @@ function aptall() {
 # Misc
 ########################################################################
 #python virtual envs
-alias activate='source venv/bin/activate'
+alias activate='source ENV/bin/activate'
 
 #
 # tinyurl (from http://wtanaka.com/node/7750)
@@ -226,8 +226,8 @@ function fg() {
 function fp() { find . -print |grep $1 ;}
 
 function venv {
-    virtualenv venv
-    source venv/bin/activate
+    virtualenv ENV 
+    source ENV/bin/activate
     pip install -r requirements.txt
 }
 ########################################################################
