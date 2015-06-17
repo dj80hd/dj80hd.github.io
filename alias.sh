@@ -110,7 +110,13 @@ function gpom() {
 }
 
 function blameall() {
-    for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do git --no-pager blame $f ; done
+    for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do
+        git --no-pager blame $f
+    done
+}
+function blamealls() {
+    #Sucks name out of git blame output
+    blameall |perl -e 'while(<>){ print "$1\n" if /\(([\w ]+)\s+20/;}'|sort -n |uniq -c
 }
 function gln() {
     if [ -z "$1" ]; then
