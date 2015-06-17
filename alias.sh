@@ -226,6 +226,7 @@ function fg() {
 function fp() { find . -print |grep $1 ;}
 
 function venv {
+    rm -fr ENV
     virtualenv ENV 
     source ENV/bin/activate
     pip install -r requirements.txt
