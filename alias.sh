@@ -225,15 +225,29 @@ function fg() {
 }
 function fp() { find . -print |grep $1 ;}
 
-function venv {
+function ENV() {
+    #FIXME - check for deactivate function and call if it exists
     rm -fr ENV
     virtualenv ENV 
     source ENV/bin/activate
     pip install -r requirements.txt
 }
+function venv() { ENV }
 ########################################################################
 # Alias management
 ########################################################################
 # Reload these aliases
 alias aupdate='curl -s -o alias.txt http://dj80hd.github.io/alias.sh ; source alias.txt ; rm alias.txt'
 
+########################################################################
+# VZ hosts            
+########################################################################
+kepolo() {
+  ssh james.werwath@kepolo.icsl.net
+}
+mahalo() {
+  ssh james.werwath@mahalo.icsl.net
+}
+luau() {
+  ssh james.werwath@luau.icsl.net
+}
