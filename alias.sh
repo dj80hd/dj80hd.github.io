@@ -245,12 +245,12 @@ alias aupdate='curl -s -o alias.txt http://dj80hd.github.io/alias.sh ; source al
 ########################################################################
 # VZ hosts            
 ########################################################################
-kepolo() {
+function kepolo() {
   ssh james.werwath@kepolo.icsl.net
 }
-mahalo() {
+function mahalo() {
   ssh james.werwath@mahalo.icsl.net
 }
-luau() {
+function luau() {
   ssh james.werwath@luau.icsl.net
 }
