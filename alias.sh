@@ -176,6 +176,15 @@ function aptall() {
 alias activate='source ENV/bin/activate'
 
 #
+# Gather up all requirements.txt in this and any sub directory, print
+# it all as a unique list of requirements
+#
+function all_requirements() {
+    # ignore, comments, whitespace, handle special case of things like
+    # -e git+ssh://git@aloha.icsl.net:2223/aloha/vzlogs3.git@v0.1.0#egg=vzlogs3
+    for f in $(fp requirements.txt|grep -v ENV); do cat $f; done |sort |perl -e 'while(<>){ print "$1\n" if /^(\S+)/ && !/^#/ && !/^-/; print "$1\n" if /(-e \S+)/;}' |uniq
+}
+#
 # tinyurl (from http://wtanaka.com/node/7750)
 #
 function tinyurl() {
@@ -254,3 +263,5 @@ function mahalo() {
 function luau() {
   ssh james.werwath@luau.icsl.net
 }
+
+
