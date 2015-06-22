@@ -252,7 +252,7 @@ function venv() {
 alias aupdate='curl -s -o alias.txt http://dj80hd.github.io/alias.sh ; source alias.txt ; rm alias.txt'
 
 ########################################################################
-# VZ hosts            
+# VZ stuff            
 ########################################################################
 function kepolo() {
   ssh james.werwath@kepolo.icsl.net
@@ -262,6 +262,23 @@ function mahalo() {
 }
 function luau() {
   ssh james.werwath@luau.icsl.net
+}
+function vztun() {
+    if [ -z "$1" ]; then
+        echo "You must specifiy a host e.g. vztun mahalo 5003"
+    elif [ -z "$2" ]; then
+        echo "You must specifiy a host e.g. vztun mahalo 5003"
+    else
+        USED=`lsof -i :$2`
+        #FIXME - Make sure we are not on the host we are tunneling to!
+        if [ -z "$USED" ]; then
+            ssh -fNT -L $2:localhost:$2 james.werwath@$1.icsl.net
+        else 
+            echo "ERROR: Looks like port $2 is used.  lsof -i :$2 to find PID" 
+        fi                     
+    fi                     
+        
+
 }
 
 
