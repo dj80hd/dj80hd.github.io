@@ -196,7 +196,9 @@ function httphere() {
 # $1 - Port Number (e.g. 8080)
 function lsofkill() {
    PID=`lsof -t -i $1`
-   kill -9 $PID
+   if [ ! "$PID" = "" ]; then
+       kill -9 $PID
+   fi             
 }
 #
 # Gather up all requirements.txt in this and any sub directory, print
