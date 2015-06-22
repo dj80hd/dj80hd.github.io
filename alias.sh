@@ -182,6 +182,22 @@ function aptall() {
 #python virtual envs
 alias activate='source ENV/bin/activate'
 
+
+#
+# Creates http server in this directory running on port
+# $1 - port (optional) 5000 by default
+#
+function httphere() {
+    python -m SimpleHTTPServer $1
+}
+
+#
+# kills any process running on the given port
+# $1 - Port Number (e.g. 8080)
+function lsofkill() {
+   PID=`lsof -t -i $1`
+   kill -9 $PID
+}
 #
 # Gather up all requirements.txt in this and any sub directory, print
 # it all as a unique list of requirements
