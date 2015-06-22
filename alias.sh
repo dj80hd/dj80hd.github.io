@@ -85,6 +85,13 @@ function dprm() {
         sudo docker rm $p 
     done
 }
+# Delete all
+function dprma() {
+    for p in `sudo docker ps -a|grep -v CONTAINER |cut -d' ' -f 1` ; do 
+        sudo docker stop $p 
+        sudo docker rm $p 
+    done
+}
 
 function dip() { 
     docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
