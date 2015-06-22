@@ -195,7 +195,7 @@ function httphere() {
 # kills any process running on the given port
 # $1 - Port Number (e.g. 8080)
 function lsofkill() {
-   PID=`lsof -t -i $1`
+   PID=`lsof -t -i :$1`
    if [ ! "$PID" = "" ]; then
        kill -9 $PID
    fi             
