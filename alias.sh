@@ -107,6 +107,14 @@ function dhostport() {
 #- Conveniece method to run ansible-playbook
 function anp() { ansible-playbook "$@" ;}
 function anpl() { ansible-playbook -c local "$@" ;}
+function andump() {
+    for f in `find -f . |grep "\.yml"` ; do 
+        echo $f             
+        echo "-----------------------------------------------------"
+        cat $f
+        echo
+    done
+}
 
 
 ########################################################################
