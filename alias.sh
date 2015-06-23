@@ -285,7 +285,7 @@ function venv() {
 # Alias management
 ########################################################################
 # Reload these aliases
-alias aupdate='curl -s -o alias.txt http://dj80hd.github.io/alias.sh ; source alias.txt ; rm alias.txt'
+alias aupdate='curl -s -o /tmp/alias.txt http://dj80hd.github.io/alias.sh ; source /tmp/alias.txt ; rm /tmp/alias.txt'
 
 ########################################################################
 # VZ stuff            
