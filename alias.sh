@@ -182,6 +182,9 @@ function aptall() {
 #python virtual envs
 alias activate='source ENV/bin/activate'
 
+function curli() {
+    curl -i -k "$@"
+}
 function port() {
     if [ -z "$1" ]; then
         echo "A port number is required, i.e. port 8080"
