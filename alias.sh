@@ -184,6 +184,17 @@ alias activate='source ENV/bin/activate'
 
 
 #
+# Detailed directory list with optional grep paramter
+# e.g. lsl pyc
+#
+function lsl() {
+    if [ -z "$1" ]; then
+        ls -al
+    else
+        ls -al | grep $1
+    fi
+}
+#
 # Creates http server in this directory running on port
 # $1 - port (optional) 5000 by default
 #
