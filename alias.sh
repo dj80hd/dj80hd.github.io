@@ -190,6 +190,13 @@ function aptall() {
 #python virtual envs
 alias activate='source ENV/bin/activate'
 
+function zipdir() {
+    if [ -z "$1" ]; then
+        echo "dir is required, e.g. zipdir foo/"
+    else
+        zip -r $1.zip $1  
+    fi
+}
 function curli() {
     curl -i -k "$@"
 }
