@@ -71,11 +71,17 @@ function di() {
 }
 
 
-#- Stop any containers matching input
+#- Stop any containers matching input, no input -> stop all
 function dps() {
-    for p in `sudo docker ps|grep $1 |cut -d' ' -f 1` ; do 
-        sudo docker stop $p 
-    done
+    if [ -z "$1" ]; then
+        for p in `sudo docker ps|grep IMAGE | cut -d' ' -f 1` ; do 
+            sudo docker stop $p 
+        done
+    else
+        for p in `sudo docker ps|grep $1 |cut -d' ' -f 1` ; do 
+            sudo docker stop $p 
+        done
+    fi
 }
 
 #- Stop and remove any containers matching input param
