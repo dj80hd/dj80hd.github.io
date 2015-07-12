@@ -200,6 +200,23 @@ function zipdir() {
 function curli() {
     curl -i -k "$@"
 }
+
+# Curl a local secure port (shorthand for curl https://127.0.0.1:8443)
+function curlslp() {
+    if [ -z "$1" ]; then
+        echo "port is required, e.g. curlslp 8443  "
+    else
+        curl https://127.0.0.1:$1
+    fi
+}
+# Curl a local port (shorthand for curl http://127.0.0.1:8080)
+function curllp() {
+    if [ -z "$1" ]; then
+        echo "port is required, e.g. curllp 80  "
+    else
+        curl http://127.0.0.1:$1
+    fi
+}
 function port() {
     if [ -z "$1" ]; then
         echo "A port number is required, i.e. port 8080"
@@ -285,6 +302,7 @@ LH=http://127.0.0.1
 R=~/repos
 
 #- find and grep                                                  
+#- e.g. fg selenium py
 function fg() { 
     if [ -z "$2" ]; then
         grep -r $1 . 
