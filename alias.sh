@@ -74,7 +74,7 @@ function di() {
 #- Stop any containers matching input, no input -> stop all
 function dps() {
     if [ -z "$1" ]; then
-        for p in `sudo docker ps|grep IMAGE | cut -d' ' -f 1` ; do 
+        for p in `sudo docker ps|grep -v IMAGE | cut -d' ' -f 1` ; do 
             sudo docker stop $p 
         done
     else
