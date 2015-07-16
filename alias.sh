@@ -20,11 +20,25 @@ function de() { sudo docker exec -t "$@" ;}
 #- Conveniece method to create an interactive shell in a container
 function dei() { sudo docker exec -i -t $1 bash ;}
 
+#- Shorthand for upgrading docker to latest version
+function dupgrade() {
+    wget -qO- https://get.docker.com/ | sh
+}
+
 #- Conveniece method to remove a container                         
 function dr() { sudo docker rm $1 ;}
 
 #- Conveniece method to show active containers                     
 function dp() { sudo docker ps ;}
+#- Show all docker process, optional input match string
+#- e.g. dpa flasky
+function dpa() { 
+    if [ -z "$1" ]; then
+        sudo docker ps -a 
+    else
+        sudo docker ps -a |grep $1
+    fi
+}
 
 #- Conveniece method to build a container                          
 function db() { sudo docker build -t $1 . ;}
@@ -34,8 +48,8 @@ function dbnc() { sudo docker build --no-cache -t $1 . ;}
 function dl() { sudo docker logs $1 ;}
 
 #- Conveniece method to run an interactive disposable container w/ /tmp mapped
-function drt() { docker run --rm -v /tmp:/tmp -it ubuntu:trusty ;}
-function drtp() { docker run --rm -v /tmp:/tmp -it dj80hd/privates:trustyplus ;}
+function drt() { sudo docker run --rm -v /tmp:/tmp -it ubuntu:trusty ;}
+function drtp() { sudo docker run --rm -v /tmp:/tmp -it dj80hd/privates:trustyplus ;}
 
 #- Show report of volumes in each image (FIXME - IMPLEMENT)        
 function dv() { 
@@ -51,15 +65,6 @@ function dbv() {
 # docker run --rm --volumes-from $1 -v $(pwd):/backup ubuntu tar cvf /backup/$1_backup.tar $dir
 }
 
-#- Show all docker process, optional input match string
-#- e.g. dpa flasky
-function dpa() { 
-    if [ -z "$1" ]; then
-        sudo docker ps -a 
-    else
-        sudo docker ps -a |grep $1
-    fi
-}
 
 #- Show all docker images with optional grep param
 function di() { 
@@ -113,6 +118,8 @@ function dhostport() {
 #- Conveniece method to run ansible-playbook
 function anp() { ansible-playbook "$@" ;}
 function anpl() { ansible-playbook -c local "$@" ;}
+
+#- Dump all the playbooks in a given root directory
 function andump() {
     for f in `find -f . |grep "\.yml"` ; do 
         echo $f             
