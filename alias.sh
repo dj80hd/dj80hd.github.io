@@ -211,7 +211,7 @@ function zipdir() {
     fi
 }
 function curli() {
-    curl -i -k "$@"
+    curl -L -i -k "$@"
 }
 
 # Curl a local secure port (shorthand for curl https://127.0.0.1:8443)
