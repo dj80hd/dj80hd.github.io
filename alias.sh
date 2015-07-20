@@ -11,7 +11,7 @@
 #  zentry functions
 ########################################################################
 function apt-install-zentry() {
-    sudo apt-get install python-dev python-pip python-virtualenv libev4 libev-dev libffi-dev libssl-dev -y
+    sudo apt-get install git curl wget build-essential python-dev python-pip python-virtualenv libev4 libev-dev libffi-dev libssl-dev -y
 }
 ########################################################################
 #  docker functions
