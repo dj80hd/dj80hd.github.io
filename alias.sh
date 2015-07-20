@@ -8,6 +8,12 @@
 # - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
 ########################################################################
+#  zentry functions
+########################################################################
+function apt-install-zentry() {
+    sudo apt-get install python-dev python-pip python-virtualenv libev4 libev-dev libffi-dev libssl-dev -y
+}
+########################################################################
 #  docker functions
 ########################################################################
 
