@@ -330,6 +330,16 @@ function fg() {
         grep --include="*.$2" -r $1 .
     fi
 }
+#- recursively delete files of type                               
+#- e.g. rmr pyc
+function rmr() { 
+    if [ -z "$1" ]; then
+        echo "you must enter an extension like pyc"
+    else
+        find . -name "*.$1" -type f -delete
+    fi
+}
+
 function fp() { find . -print |grep $1 ;}
 
 function ENV() {
