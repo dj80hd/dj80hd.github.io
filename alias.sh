@@ -16,7 +16,11 @@ function apt-install-zentry() {
 ########################################################################
 #  docker functions
 ########################################################################
-
+function dockerupdate() {
+    sudo add-apt-repository ppa:docker-maint/testing
+    sudo apt-get update
+    sudo apt-get install docker.io -y
+}
 #- Conveniece method to run docer commands as sudo
 function d() { sudo docker "$@" ;}
 
