@@ -177,7 +177,7 @@ function gacp() {
 
 function gitme() {
     git config --global user.email "werwath@gmail.com"
-    git config --global user.name "80HD"           
+    git config --global user.name "Jimi Werwath"           
     git config branch.master.rebase true
     git config --global core.editor vi
 }
