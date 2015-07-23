@@ -21,6 +21,9 @@ function utestit() {
 ########################################################################
 #  docker functions
 ########################################################################
+function kickdocker() {
+    sudo service docker.io restart
+}
 function dockerupdate() {
     sudo add-apt-repository ppa:docker-maint/testing
     sudo apt-get update
