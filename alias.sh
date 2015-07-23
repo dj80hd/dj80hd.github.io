@@ -215,6 +215,11 @@ function aptall() {
 #python virtual envs
 alias activate='source ENV/bin/activate'
 
+# Recusive ls sorted by size
+function sortsize() {
+    find . -type f -print0 | xargs -0 ls -la | awk '{print int($5/1000) " KB\t" $9}' | sort -n -r -k1
+}
+
 function zipdir() {
     if [ -z "$1" ]; then
         echo "dir is required, e.g. zipdir foo/"
