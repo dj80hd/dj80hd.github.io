@@ -215,6 +215,14 @@ function aptall() {
 #python virtual envs
 alias activate='source ENV/bin/activate'
 
+# Recursively delete directories by name
+function rdd() {
+    if [ -z "$1" ]; then
+        echo "ERROR: You must specify a directory name (e.g. ENV)"
+    else
+        find . -name $1 -type d -print0|xargs -0 rm -r --
+    end
+}
 # Recusive ls sorted by size
 function sortsize() {
     find . -type f -print0 | xargs -0 ls -la | awk '{print int($5/1000) " KB\t" $9}' | sort -n -r -k1
