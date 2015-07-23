@@ -221,7 +221,7 @@ function rdd() {
         echo "ERROR: You must specify a directory name (e.g. ENV)"
     else
         find . -name $1 -type d -print0|xargs -0 rm -r --
-    end
+    fi  
 }
 # Recusive ls sorted by size
 function sortsize() {
