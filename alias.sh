@@ -13,6 +13,11 @@
 function apt-install-zentry() {
     sudo apt-get install git curl wget build-essential python-dev python-pip python-virtualenv libev4 libev-dev libffi-dev libssl-dev -y
 }
+#Perform unit tests for core-ui/core-api/authn
+function utestit() {
+    /bin/cp local/__init__.py.default local/__init__.py
+    python -m pytest --junitxml=./junit.xml --cov-report xml --cov . tests
+}
 ########################################################################
 #  docker functions
 ########################################################################
@@ -366,6 +371,9 @@ function ENV() {
     virtualenv ENV 
     source ENV/bin/activate
     pip install -r requirements.txt
+    if [ -f test-requirements.txt ]; then
+        pip install -r test-requirements.txt
+    fi
 }
 function venv() { 
     ENV 
