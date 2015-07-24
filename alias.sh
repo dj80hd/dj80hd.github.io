@@ -133,9 +133,13 @@ function dip() {
     sudo docker inspect --format '{{  .NetworkSettings.Ports  }}' $1
 }
 function dipp() {
-    #FIXME - Implement
     #This did not work http://stackoverflow.com/questions/30342796/how-to-get-env-variable-when-doing-docker-inspect/30353018#30353018
-    echo "IMPLEMENT!"
+    if [ -z "$1" ]; then
+       echo "USAGE: dipp <docker name> <exposed port>"
+       echo "e.g.   dipp baremetal 22                 "
+       exit 1
+    fi                    
+    sudo docker port $1 $2 |cut -d':' -f2
 }
 
 function dhostport() {
