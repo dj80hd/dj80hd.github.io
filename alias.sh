@@ -134,7 +134,8 @@ function dip() {
 }
 function dipp() {
     #FIXME - Implement
-    # This did not work http://stackoverflow.com/questions/30342796/how-to-get-env-variable-when-doing-docker-inspect/30353018#30353018
+    #This did not work http://stackoverflow.com/questions/30342796/how-to-get-env-variable-when-doing-docker-inspect/30353018#30353018
+    echo "IMPLEMENT!"
 }
 
 function dhostport() {
