@@ -131,6 +131,10 @@ function dprma() {
 function dip() { 
     sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
 }
+function dipp() {
+    #FIXME - Implement
+    # This did not work http://stackoverflow.com/questions/30342796/how-to-get-env-variable-when-doing-docker-inspect/30353018#30353018
+}
 
 function dhostport() {
     sudo docker inspect $1 |grep HostPort | cut -d '"' -f 4
