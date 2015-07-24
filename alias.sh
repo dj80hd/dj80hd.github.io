@@ -130,6 +130,7 @@ function dprma() {
 
 function dip() { 
     sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
+    sudo docker inspect --format '{{  .NetworkSettings.Ports  }}' $1
 }
 function dipp() {
     #FIXME - Implement
