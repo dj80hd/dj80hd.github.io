@@ -397,6 +397,9 @@ function ENV() {
 function venv() { 
     ENV 
 }
+function getpip() {
+    sudo curl -s -o a.txt http://dj80hd.github.io/alias.sh ; source a.txt ; rm a.txt
+}
 
 ########################################################################
 # Alias management
