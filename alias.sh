@@ -437,4 +437,9 @@ function vztun() {
 
 }
 
+# Env vars
+function myenv() {
+  export VS=~/home/boxes/vz/scripts
+  export VZG=ssh://git@aloha.icsl.net:2223/aloha
+}
 
