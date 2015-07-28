@@ -27,6 +27,7 @@ function cloneall() {
 }
 #Perform unit tests for core-ui/core-api/authn
 function utestit() {
+    find . -name __pycache__ -type d -print0|xargs -0 rm -fr --
     /bin/cp local/__init__.py.default local/__init__.py
     python -m pytest --junitxml=./junit.xml --cov-report xml --cov . tests
 }
@@ -245,6 +246,12 @@ function aptall() {
 #python virtual envs
 alias activate='source ENV/bin/activate'
 
+function pd() {
+    export D=$PWD
+}
+function ppd() {
+    cd $D
+}
 # Recursively delete directories by name
 function rdd() {
     if [ -z "$1" ]; then
