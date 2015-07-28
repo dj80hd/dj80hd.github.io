@@ -411,7 +411,7 @@ function venv() {
     ENV 
 }
 function getpip() {
-    sudo curl -s -o a.txt http://dj80hd.github.io/alias.sh ; source a.txt ; rm a.txt
+    sudo curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | sudo python
 }
 
 ########################################################################
