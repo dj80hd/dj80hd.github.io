@@ -29,7 +29,7 @@ function cloneall() {
 function utestit() {
     find . -name __pycache__ -type d -print0|xargs -0 rm -fr --
     /bin/cp local/__init__.py.default local/__init__.py
-    python -m pytest --junitxml=./junit.xml --cov-report xml --cov . tests
+    python -m pytest --junitxml=./junit.xml --cov . tests
 }
 ########################################################################
 #  docker functions
