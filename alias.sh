@@ -178,6 +178,9 @@ function gpom() {
     git pull origin master
 }
 
+function blame() {
+    git --no-pager blame $1
+}
 function blameall() {
     for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do
         git --no-pager blame $f
