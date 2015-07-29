@@ -410,6 +410,10 @@ function ENV() {
         pip install -r test-requirements.txt
     fi
 }
+function deact() {
+    deactivate
+    activate
+}
 function venv() { 
     ENV 
 }
