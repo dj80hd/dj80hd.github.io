@@ -139,6 +139,15 @@ function dip() {
     sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
     sudo docker inspect --format '{{  .NetworkSettings.Ports  }}' $1
 }
+function cqltest() {
+    if [ -z "$1" ]; then
+       echo "USAGE: cqltest <docker name>"
+       echo "e.g.   cqltest dse"
+       exit 1
+    fi                    
+    P=`sudo docker port jolly_albattani 9160 |cut -d':' -f2`
+    cqlsh 127.0.0.1 $P
+}
 function dipp() {
     #This did not work http://stackoverflow.com/questions/30342796/how-to-get-env-variable-when-doing-docker-inspect/30353018#30353018
     if [ -z "$1" ]; then
@@ -432,6 +441,11 @@ alias aupdate='curl -s -o /tmp/alias.txt http://dj80hd.github.io/alias.sh ; sour
 ########################################################################
 function kepolo() {
   ssh james.werwath@kepolo.icsl.net
+}
+function opscenter() {
+    ssh -Nn -D 9090 james.werwath@mahalo.icsl.net
+    echo "Set your SOCKS proxy to localhost:9090 for url *http://65.196.125.198:8888/*"
+    
 }
 function mahalo() {
   ssh james.werwath@mahalo.icsl.net
