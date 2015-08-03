@@ -145,7 +145,7 @@ function cqltest() {
        echo "e.g.   cqltest dse"
        exit 1
     fi                    
-    P=`sudo docker port jolly_albattani 9160 |cut -d':' -f2`
+    P=`sudo docker port $1 9160 |cut -d':' -f2`
     cqlsh 127.0.0.1 $P
 }
 function dipp() {
