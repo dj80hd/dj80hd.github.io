@@ -296,7 +296,7 @@ function curlslp() {
     if [ -z "$1" ]; then
         echo "port is required, e.g. curlslp 8443  "
     else
-        curl -k https://127.0.0.1:$1
+        curl -i -k -L https://127.0.0.1:$1
     fi
 }
 # Curl a local port (shorthand for curl http://127.0.0.1:8080)
@@ -304,7 +304,7 @@ function curllp() {
     if [ -z "$1" ]; then
         echo "port is required, e.g. curllp 80  "
     else
-        curl http://127.0.0.1:$1
+        curl -i -k http://127.0.0.1:$1
     fi
 }
 function port() {
