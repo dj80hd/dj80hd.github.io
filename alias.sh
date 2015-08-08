@@ -281,6 +281,9 @@ function sortsize() {
 }
 
 function zipdir() {
+    #better to use ?
+    #tar -cvzf backup.tgz /home/user/project
+    #tar -xvzf backup.tgz
     if [ -z "$1" ]; then
         echo "dir is required, e.g. zipdir foo/"
     else
