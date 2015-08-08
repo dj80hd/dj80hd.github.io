@@ -280,6 +280,10 @@ function sortsize() {
     find . -type f -print0 | xargs -0 ls -la | awk '{print int($5/1000) " KB\t" $9}' | sort -n -r -k1
 }
 
+function zipdir2() {
+    tar -cvzf $1.tgz $1
+    echo "unzip with tar -xvzf $1.tgz"
+}
 function zipdir() {
     #better to use ?
     #tar -cvzf backup.tgz /home/user/project
