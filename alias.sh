@@ -258,6 +258,15 @@ function aptall() {
 ########################################################################
 # Misc
 ########################################################################
+
+function b() {
+    LEVELS=1
+    if [ ! -z "$1" ]; then
+        LEVELS=$1
+    fi
+    for i in $(seq 1 $LEVELS); do cd ..; done
+
+}
 #python virtual envs
 alias activate='source ENV/bin/activate'
 
@@ -381,7 +390,6 @@ alias h='history'
 function pg() { ps aux |grep $1 ;}
 function hg() { history |grep $1 ;}
 function psa() { ps aux |grep $1 | grep -v grep ;}
-function b() { cd .. ;}
 function chx() { chmod +x *sh ;}
 function mkcd {
     if [ -z "$1" ]; then
