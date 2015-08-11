@@ -500,5 +500,33 @@ function myenv() {
   export VS=~/home/boxes/vz/scripts
   export VZG=ssh://git@aloha.icsl.net:2223/aloha
 }
+function contains() {
+# contains(string, substring)
+#
+# Returns 0 if the specified string contains the specified substring,
+# otherwise returns 1.
+# e.g.
+# contains "abcd" "e" || echo "abcd does not contain e"
+# (shamelesslly ripped off from http://tinyurl.com/nzg5hcm)
+    string="$1"
+    substring="$2"
+    if test "${string#*$substring}" != "$string"
+    then
+        return 0    # $substring is in $string
+    else
+        return 1    # $substring is not in $string
+    fi
+}
 
+######### BASH JEMS ###############
+# - Current dir of script
+#DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+#
+# - Here Doc:
+#cat << EOF > /tmp/yourfilehere
+#These contents will be written to the file.
+#        This line is indented.
+#EOF
+# - Check for program
+# command -v foo >/dev/null 2>&1 || { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
 
