@@ -471,6 +471,9 @@ function kaiaulu2() {
 function k2() {
     kaiaulu2
 }
+function k2cmd() {
+    ssh james.werwath@kaiaulu2.icsl.net "$@"
+}
 function mahalo() {
   ssh james.werwath@mahalo.icsl.net
 }
