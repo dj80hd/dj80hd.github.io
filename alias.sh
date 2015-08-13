@@ -465,6 +465,12 @@ function opscenter() {
     echo "Set your SOCKS proxy to localhost:9090 for url *http://65.196.125.198:8888/*"
     
 }
+function kaiaulu2() {
+    ssh james.werwath@kaiaulu2.icsl.net 
+}
+function k2() {
+    kaiaulu2
+}
 function mahalo() {
   ssh james.werwath@mahalo.icsl.net
 }
@@ -529,4 +535,14 @@ function contains() {
 #EOF
 # - Check for program
 # command -v foo >/dev/null 2>&1 || { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
-
+# - Grep command output (without grep)
+# [[ $(/usr/local/bin/monit --version) != *5.5* ]]
+#[[ $CORE_UI_TEST == *"$NEEDLE"* ]] && CORE_UI_STATUS="OK"
+# - Test if ports open
+# exec 6<>/dev/tcp/127.0.0.1/445 || echo "No one is listening!"
+# exec 6>&- # close output connection
+# exec 6<&- # close input connection
+#
+# - One line error exits
+# test "0" = "$?" || { echo "ERROR: Copy error [2]" ; exit $?; }
+# test -f $FILE|| { echo "ERROR: FILE does not exist: $FILE" ; exit $?; }
