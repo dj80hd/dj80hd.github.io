@@ -349,6 +349,14 @@ function httphere() {
     python -m SimpleHTTPServer $1
 }
 
+# Personal version of pkill that is more flexible
+function mypkill() {
+    [[ -z "$1" ]] && { echo "USAGE: mypkill <search_term>" ; return 1 ; }
+    for KILLPID in `ps aux | grep $1 |grep -v grep | awk ' { print $2;}'`; do 
+        echo "Killing process $KILLPID ..."
+        kill -9 $KILLPID;
+    done
+}
 #
 # kills any process running on the given port
 # $1 - Port Number (e.g. 8080)
