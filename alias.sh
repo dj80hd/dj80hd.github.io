@@ -258,7 +258,10 @@ function aptall() {
 ########################################################################
 # Misc
 ########################################################################
-
+ssldebug() {
+    [[ -z "$1" ]] && { echo "You must enter a host like 127.0.0.1:8443" ; exit 1 ; }
+    openssl s_client -connect $1 -prexit -debug -msg
+}
 function b() {
     LEVELS=1
     if [ ! -z "$1" ]; then
