@@ -259,8 +259,9 @@ function aptall() {
 # Misc
 ########################################################################
 ssldebug() {
-    [[ -z "$1" ]] && { echo "You must enter a host like 127.0.0.1:8443" ; exit 1 ; }
-    openssl s_client -connect $1 -prexit -debug -msg
+    [[ -z "$1" ]] && { echo "You must enter a host like 127.0.0.1:8443" ; return 1 ; }
+    IP="$1"; shift
+    openssl s_client -connect $IP -prexit -debug -msg $@
 }
 function b() {
     LEVELS=1
