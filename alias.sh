@@ -10,22 +10,28 @@
 ########################################################################
 #  cassandra              
 ########################################################################
+#- Run a sample query against cqlsh
+#- pass optional params to override defaults.  e.g. dks 10.0.2.33 2229
 function dks() { 
     echo "describe keyspaces;" | cqlsh "$@" 
 }
+
 ########################################################################
 #  zentry functions
 ########################################################################
+#- apt install all packages required for zentry
 function apt-install-zentry() {
     sudo apt-get install git curl wget build-essential python-dev python-pip python-virtualenv libev4 libev-dev libffi-dev libssl-dev -y
 }
 
+#- Clone all zentry repos
 function cloneall() {
    git clone ssh://git@aloha.icsl.net:2223/aloha/core-ui.git
    git clone ssh://git@aloha.icsl.net:2223/aloha/core-api.git
    git clone ssh://git@aloha.icsl.net:2223/aloha/authn-session-authz.git
 }
-#Perform unit tests for core-ui/core-api/authn
+
+#- Perform unit tests for core-ui/core-api/authn
 function utestit() {
     find . -name __pycache__ -type d -print0|xargs -0 rm -fr --
     /bin/cp local/__init__.py.default local/__init__.py
@@ -34,14 +40,24 @@ function utestit() {
 ########################################################################
 #  docker functions
 ########################################################################
+
+#- Restart Docker Daemon
 function kickdocker() {
     sudo service docker.io restart
 }
-function dockerupdate() {
+
+#- Install latest docker
+function dupgrade2() {
     sudo add-apt-repository ppa:docker-maint/testing
     sudo apt-get update
     sudo apt-get install docker.io -y
 }
+
+#- Shorthand for upgrading docker to latest version
+function dupgrade() {
+    wget -qO- https://get.docker.com/ | sh
+}
+
 #- Conveniece method to run docer commands as sudo
 function d() { sudo docker "$@" ;}
 
@@ -51,18 +67,13 @@ function de() { sudo docker exec -t "$@" ;}
 #- Conveniece method to create an interactive shell in a container
 function dei() { sudo docker exec -i -t $1 bash ;}
 
-#- Shorthand for upgrading docker to latest version
-function dupgrade() {
-    wget -qO- https://get.docker.com/ | sh
-}
-
 #- Conveniece method to remove a container                         
 function dr() { sudo docker rm $1 ;}
 
 #- Conveniece method to show active containers                     
 function dp() { sudo docker ps ;}
-#- Show all docker process, optional input match string
-#- e.g. dpa flasky
+
+#- Show all docker process, optional input match string e.g. dpa flasky
 function dpa() { 
     if [ -z "$1" ]; then
         sudo docker ps -a 
@@ -96,8 +107,7 @@ function dbv() {
 # docker run --rm --volumes-from $1 -v $(pwd):/backup ubuntu tar cvf /backup/$1_backup.tar $dir
 }
 
-
-#- Show all docker images with optional grep param
+#- Show all docker images with optional grep param (e.g di bm_)
 function di() { 
     if [ -z "$1" ]; then
         sudo docker images
@@ -105,7 +115,6 @@ function di() {
         sudo docker images | grep $1
     fi
 }
-
 
 #- Stop any containers matching input, no input -> stop all
 function dps() {
@@ -127,7 +136,8 @@ function dprm() {
         sudo docker rm $p 
     done
 }
-# Delete all
+
+#- Delete all conatainers both running and stopped.
 function dprma() {
     for p in `sudo docker ps -a|grep -v CONTAINER |cut -d' ' -f 1` ; do 
         sudo docker stop $p 
@@ -135,13 +145,18 @@ function dprma() {
     done
 }
 
+#- Get the IP address of a container.
 function dip() { 
     sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
 }
+
+#- Get IP address and ports of a container
 function dipa() { 
     sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
     sudo docker inspect --format '{{  .NetworkSettings.Ports  }}' $1
 }
+
+#- Get a cqlsh shell on a running container.  Input = container name.
 function cqltest() {
     if [ -z "$1" ]; then
        echo "USAGE: cqltest <docker name>"
@@ -151,6 +166,8 @@ function cqltest() {
     P=`sudo docker port $1 9160 |cut -d':' -f2`
     cqlsh 127.0.0.1 $P
 }
+
+#-
 function dipp() {
     #This did not work http://stackoverflow.com/questions/30342796/how-to-get-env-variable-when-doing-docker-inspect/30353018#30353018
     if [ -z "$1" ]; then
@@ -161,6 +178,7 @@ function dipp() {
     sudo docker port $1 $2 |cut -d':' -f2
 }
 
+#- ?
 function dhostport() {
     sudo docker inspect $1 |grep HostPort | cut -d '"' -f 4
 }
@@ -170,6 +188,8 @@ function dhostport() {
 ########################################################################
 #- Conveniece method to run ansible-playbook
 function anp() { ansible-playbook "$@" ;}
+
+#- Convenience method to run ansible playbook locally
 function anpl() { ansible-playbook -c local "$@" ;}
 
 #- Dump all the playbooks in a given root directory
@@ -190,19 +210,31 @@ function gpom() {
     git pull origin master
 }
 
+#- execute any git command with --no-pager so we can pipe the output
+function gitnp() {
+    git --no-pager "$@"
+}
+
+#- git blame with no pager - suitable to piping to other commands
 function blame() {
     git --no-pager blame $1
 }
+
+#- Worker function for blamealls
 function blameall() {
     for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do
         git --no-pager blame $f
     done
 }
+
+#- Print summary of who has worked in a repo
 function blamealls() {
     #Sucks name out of git blame output
     #trims leading/tailing whitespace
     blameall |perl -e 'while(<>){ print "$1\n" if /\(([\w ]+)\s+20/;}'|sort -n |awk '{$1=$1};1'|uniq -c
 }
+
+#- Convenience method to use git log
 function gln() {
     if [ -z "$1" ]; then
         git log -n 1
@@ -210,6 +242,8 @@ function gln() {
         git log -n $1
     fi
 }
+
+#- Git add -A + git commit <input> + git push origin master
 function gacp() {
     if [ -z "$1" ]; then
         echo "ERROR: You must specify a comment"
@@ -221,6 +255,7 @@ function gacp() {
     fi
 }
 
+#- Configure my default settings for git
 function gitme() {
     git config --global user.email "werwath@gmail.com"
     git config --global user.name "Jimi Werwath"           
@@ -231,12 +266,12 @@ function gitme() {
 ########################################################################
 # Vagrant
 ########################################################################
-# Alias for vagrant global status
+#- Alias for vagrant global status
 function vgs() {
     vagrant global-status
 }
 
-# Halt all running vagrant instances
+#- Halt all running vagrant instances
 function vhall() {
     for b in `vagrant global-status |grep running |cut -d' ' -f 1` ; do 
         vagrant halt $b
@@ -244,25 +279,24 @@ function vhall() {
 }
 
 ########################################################################
-# Cassandra
-########################################################################
-function dk() {
-    echo "describe keyspaces;" | cqlsh $1 $2 
-}
-########################################################################
 # Apt
 ########################################################################
+#- Print all installed apt packages
 function aptall() {
     dpkg -l
 }
+
 ########################################################################
 # Misc
 ########################################################################
+#- debug ssl to a given host:port  e.g. ssldebug 47.222.21.83:2222
 ssldebug() {
     [[ -z "$1" ]] && { echo "You must enter a host like 127.0.0.1:8443" ; return 1 ; }
     IP="$1"; shift
     openssl s_client -connect $IP -prexit -debug -msg $@
 }
+
+#- Backup n directory levels (default 1 level if no arg)   e.g. b 4 = backup 4 dirs
 function b() {
     LEVELS=1
     if [ ! -z "$1" ]; then
@@ -271,16 +305,18 @@ function b() {
     for i in $(seq 1 $LEVELS); do cd ..; done
 
 }
-#python virtual envs
-alias activate='source ENV/bin/activate'
 
+#- "Push" current directory on a stack to be called up later
 function pd() {
     export D=$PWD
 }
+
+#- Change back to directory saved with 'pd'
 function ppd() {
     cd $D
 }
-# Recursively delete directories by name
+
+#- Recursively delete directories by name
 function rdd() {
     if [ -z "$1" ]; then
         echo "ERROR: You must specify a directory name (e.g. ENV)"
@@ -288,15 +324,19 @@ function rdd() {
         find . -name $1 -type d -print0|xargs -0 rm -r --
     fi  
 }
-# Recusive ls sorted by size
+
+#- Recusive ls sorted by size
 function sortsize() {
     find . -type f -print0 | xargs -0 ls -la | awk '{print int($5/1000) " KB\t" $9}' | sort -n -r -k1
 }
 
+#- Zip up a directory to a .tgz file
 function zipdir2() {
     tar -cvzf $1.tgz $1
     echo "unzip with tar -xvzf $1.tgz"
 }
+
+#- Zip up a directory to a .zip file
 function zipdir() {
     #better to use ?
     #tar -cvzf backup.tgz /home/user/project
@@ -307,11 +347,13 @@ function zipdir() {
         zip -r $1.zip $1  
     fi
 }
+
+#- convenience for curl -i -k -L
 function curli() {
     curl -L -i -k "$@"
 }
 
-# Curl a local secure port (shorthand for curl https://127.0.0.1:8443)
+#- Curl a local secure port (shorthand for curl https://127.0.0.1:8443)
 function curlslp() {
     if [ -z "$1" ]; then
         echo "port is required, e.g. curlslp 8443  "
@@ -319,7 +361,8 @@ function curlslp() {
         curl -i -k -L https://127.0.0.1:$1
     fi
 }
-# Curl a local port (shorthand for curl http://127.0.0.1:8080)
+
+#- Curl a local port (shorthand for curl http://127.0.0.1:8080)
 function curllp() {
     if [ -z "$1" ]; then
         echo "port is required, e.g. curllp 80  "
@@ -327,6 +370,8 @@ function curllp() {
         curl -i -k http://127.0.0.1:$1
     fi
 }
+
+#- Find out what is using a given local port
 function port() {
     if [ -z "$1" ]; then
         echo "A port number is required, i.e. port 8080"
@@ -334,10 +379,8 @@ function port() {
         sudo lsof -i :$1
     fi
 }
-#
-# Detailed directory list with optional grep paramter
-# e.g. lsl pyc
-#
+
+#- Detailed directory list with optional grep paramter (e.g. lsl pyc)
 function lsl() {
     if [ -z "$1" ]; then
         ls -al
@@ -345,15 +388,13 @@ function lsl() {
         ls -al | grep $1
     fi
 }
-#
-# Creates http server in this directory running on port
-# $1 - port (optional) 5000 by default
-#
+
+#- Creates http server in this directory running on given port (or 5000 default)
 function httphere() {
     python -m SimpleHTTPServer $1
 }
 
-# Personal version of pkill that is more flexible
+#- Personal version of pkill that is more flexible
 function mypkill() {
     [[ -z "$1" ]] && { echo "USAGE: mypkill <search_term>" ; return 1 ; }
     for KILLPID in `ps aux | grep $1 |grep -v grep | awk ' { print $2;}'`; do 
@@ -361,9 +402,8 @@ function mypkill() {
         kill -9 $KILLPID;
     done
 }
-#
-# kills any process running on the given port
-# $1 - Port Number (e.g. 8080)
+ 
+#- kills any process running on the given port (e.g. lsofkill 8080)
 function lsofkill() {
    PID=`lsof -t -i :$1`
    if [ ! "$PID" = "" ]; then
@@ -379,9 +419,8 @@ function all_requirements() {
     # -e git+ssh://git@aloha.icsl.net:2223/aloha/vzlogs3.git@v0.1.0#egg=vzlogs3
     for f in $(fp requirements.txt|grep -v ENV); do cat $f; done |sort |perl -e 'while(<>){ print "$1\n" if /^(\S+)/ && !/^#/ && !/^-/; print "$1\n" if /(-e \S+)/;}' |uniq
 }
-#
-# tinyurl (from http://wtanaka.com/node/7750)
-#
+
+#- obtain a tinyurl for the given url (from http://wtanaka.com/node/7750)
 function tinyurl() {
 wget -q -O - \
 -U "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.8) Gecko/20071008 Firefox/2.0.0.8" \
@@ -396,12 +435,14 @@ http://tinyurl.com/create.php \
 | uniq
 }
 
-#my aliases
-alias copy='cp'
-alias h='history'
-function pg() { ps aux |grep $1 ;}
+
+#- grep history for item
 function hg() { history |grep $1 ;}
-function psa() { ps aux |grep $1 | grep -v grep ;}
+
+#- grep processes for keyword
+function pg() { ps aux |grep $1 | grep -v grep ;}
+
+#- make sure every .sh file in this dir is executable.
 function chx() { chmod +x *sh ;}
 function mkcd {
     if [ -z "$1" ]; then
@@ -411,12 +452,16 @@ function mkcd {
         cd $1
     fi   
 }
+
+#- Alias for source ~/.bashrc
 function sbrc() {
     source ~/.bashrc
 }
-#my vars
-LH=http://127.0.0.1
-R=~/repos
+
+#- Alias for cat ~/.bashrc
+function cbrc() {
+    cat ~/.bashrc
+}
 
 #- find and grep                                                  
 #- e.g. fg selenium py
@@ -495,6 +540,7 @@ function luau() {
 function aloha() {
     ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.13
 }
+
 function vztun() {
     if [ -z "$1" ]; then
         echo "You must specifiy a host e.g. vztun mahalo 5003"
@@ -541,6 +587,17 @@ function contains() {
         return 1    # $substring is not in $string
     fi
 }
+
+#########################################################
+# My aliases and env vars
+#########################################################
+alias copy='cp'
+alias h='history'
+alias activate='source ENV/bin/activate'
+
+LH=http://127.0.0.1
+R=~/repos
+
 
 ######### BASH JEMS ###############
 # - Current dir of script
