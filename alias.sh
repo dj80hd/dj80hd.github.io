@@ -209,7 +209,9 @@ function andump() {
 function gpom() {
     git pull origin master
 }
-
+function gdiff2() {
+    git diff HEAD^ HEAD
+}
 #- execute any git command with --no-pager so we can pipe the output
 function gitnp() {
     git --no-pager "$@"
