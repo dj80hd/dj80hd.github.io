@@ -235,6 +235,9 @@ function blamealls() {
     #trims leading/tailing whitespace
     blameall |perl -e 'while(<>){ print "$1\n" if /\(([\w ]+)\s+20/;}'|sort -n |awk '{$1=$1};1'|uniq -c
 }
+function gs() {
+    git status
+}
 
 #- Convenience method to use git log
 function gln() {
