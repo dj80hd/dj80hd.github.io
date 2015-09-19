@@ -546,6 +546,10 @@ function aloha() {
     ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.13
 }
 
+function jenkins() {
+    ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.13
+}
+
 function vztun() {
     if [ -z "$1" ]; then
         echo "You must specifiy a host e.g. vztun mahalo 5003"
