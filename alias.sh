@@ -547,7 +547,8 @@ function aloha() {
 }
 
 function jenkins() {
-    ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.13
+    #ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.13
+    ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.22
 }
 
 function vztun() {
