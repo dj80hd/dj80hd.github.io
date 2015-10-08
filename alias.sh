@@ -606,7 +606,6 @@ alias h='history'
 alias activate='source ENV/bin/activate'
 
 LH=http://127.0.0.1
-R=~/repos
 
 
 ######### BASH JEMS ###############
