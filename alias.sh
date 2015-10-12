@@ -530,6 +530,9 @@ function opscenter() {
 function kaiaulu2() {
     ssh james.werwath@kaiaulu2.icsl.net 
 }
+function kaiaulu() {
+    ssh james.werwath@kaiaulu.icsl.net 
+}
 function k2() {
     kaiaulu2
 }
