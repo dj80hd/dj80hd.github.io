@@ -488,7 +488,7 @@ function rmr() {
 }
 
 function fp() { find . -print |grep $1 ;}
-
+function activate() { source ENV/bin/activate }
 function ENV() {
     #FIXME - check for deactivate function and call if it exists
     rm -fr ENV
@@ -606,7 +606,6 @@ function contains() {
 #########################################################
 alias copy='cp'
 alias h='history'
-alias activate='source ENV/bin/activate'
 
 LH=http://127.0.0.1
 
