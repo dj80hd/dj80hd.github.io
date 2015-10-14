@@ -634,3 +634,7 @@ LH=http://127.0.0.1
 # - One line error exits
 # test "0" = "$?" || { echo "ERROR: Copy error [2]" ; exit $?; }
 # test -f $FILE|| { echo "ERROR: FILE does not exist: $FILE" ; exit $?; }
+#
+# - Check if linux
+# - Command output contains
+# [[ $(/usr/local/bin/monit --version) =~ "5.5" ]] || echo "NOT OK"#
