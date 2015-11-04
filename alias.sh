@@ -613,6 +613,9 @@ LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############
+# - Ensure oS:
+# [[ $(lsb_release -a) =~ "14.04" ]] || { echo "You must run this on ubuntu 14.04" ; exit 1 ; }
+#
 # - Current dir of script
 #DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 #
@@ -638,3 +641,25 @@ LH=http://127.0.0.1
 # - Check if linux
 # - Command output contains
 # [[ $(/usr/local/bin/monit --version) =~ "5.5" ]] || echo "NOT OK"#
+# 
+# - Script Parms:
+#while [[ $# > 1 ]]; do
+#    key="$1"
+#    case $key in
+#        -a|--action)
+#        ACTION="$2"
+#        shift # past argument
+#        ;;
+#        -d|--directory)
+#        AUTOTEST_DIR="$2"
+#        shift # past argument
+#        ;;
+#        --default)
+#        DEFAULT=YES
+#        ;;
+#        *)
+#            # unknown option
+#        ;;
+#    esac
+#    shift # past argument or value
+#done
