@@ -276,6 +276,10 @@ function vgs() {
     vagrant global-status
 }
 
+function vkill() {
+    vagrant halt && vagrant destroy -f
+}
+
 #- Halt all running vagrant instances
 function vhall() {
     for b in `vagrant global-status |grep running |cut -d' ' -f 1` ; do 
