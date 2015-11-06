@@ -279,6 +279,10 @@ function vgs() {
 function vkill() {
     vagrant halt && vagrant destroy -f
 }
+function vreset() {
+    vagrant halt && vagrant destroy -f
+    vagrant up
+}
 
 #- Halt all running vagrant instances
 function vhall() {
