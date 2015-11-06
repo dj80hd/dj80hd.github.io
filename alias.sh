@@ -298,6 +298,15 @@ function aptall() {
 ########################################################################
 # Misc
 ########################################################################
+#- push current dir 
+push(){
+    PUSHDIR=$PWD
+}
+pop(){
+    if [ -z "$PUSHDIR"]; then
+        cd $PUSHDIR
+    fi
+}
 #- debug ssl to a given host:port  e.g. ssldebug 47.222.21.83:2222
 ssldebug() {
     [[ -z "$1" ]] && { echo "You must enter a host like 127.0.0.1:8443" ; return 1 ; }
@@ -617,6 +626,8 @@ LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############
+# - See if command exists:
+# [ ! type docker >/dev/null ] || { echo "BAD" ; exit 1 ; }
 # - Ensure oS:
 # [[ $(lsb_release -a) =~ "14.04" ]] || { echo "You must run this on ubuntu 14.04" ; exit 1 ; }
 #
