@@ -627,7 +627,7 @@ LH=http://127.0.0.1
 
 ######### BASH JEMS ###############
 # - See if command exists:
-if [ ! type docker >/dev/null ] ; then { echo "docker must be installed " ; exit 1 ; } fi
+if ! type docker >/dev/null ; then { echo "docker must be installed " ; exit 1 ; } fi
 # - Ensure oS:
 # [[ $(lsb_release -a) =~ "14.04" ]] || { echo "You must run this on ubuntu 14.04" ; exit 1 ; }
 #
