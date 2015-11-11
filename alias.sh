@@ -644,6 +644,7 @@ LH=http://127.0.0.1
 #        This line is indented.
 #EOF
 # - Check for program
+# [ -x "$(command -v docker)" ] || { echo "docker must be installed " ; exit 1 ; }
 # command -v foo >/dev/null 2>&1 || { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
 # - Grep command output (without grep)
 # [[ $(/usr/local/bin/monit --version) != *5.5* ]]
