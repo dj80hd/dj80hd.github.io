@@ -518,7 +518,7 @@ function activate() {
 function ENV() {
     #FIXME - check for deactivate function and call if it exists
     rm -fr ENV
-    virtualenv ENV 
+    python -m virtualenv ENV 
     source ENV/bin/activate
     pip install -r requirements.txt
     if [ -f test-requirements.txt ]; then
