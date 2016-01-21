@@ -303,7 +303,7 @@ function aptall() {
 # Misc
 ########################################################################
 #- cd to repos dir
-R() {
+function R() {
     cd ~/repos
 }
 
