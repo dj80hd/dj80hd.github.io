@@ -302,10 +302,17 @@ function aptall() {
 ########################################################################
 # Misc
 ########################################################################
+#- cd to repos dir
+R() {
+    cd ~/repos
+}
+
 #- push current dir 
 push(){
     PUSHDIR=$PWD
 }
+
+#- pop current dir 
 pop(){
     if [ -z "$PUSHDIR"]; then
         cd $PUSHDIR
@@ -556,7 +563,7 @@ function k2() {
     kaiaulu2
 }
 function k2a() {
-    ssh -i automation.pem automation@kaiaulu.icsl.net 
+    ssh -i automation.pem automation@kaiaulu2.icsl.net 
 }
 function k2cmd() {
     ssh james.werwath@kaiaulu2.icsl.net "$@"
