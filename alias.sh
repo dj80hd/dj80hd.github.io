@@ -17,6 +17,12 @@ function dks() {
 }
 
 ########################################################################
+#  Mesosphere         
+########################################################################
+function ma() {
+    dcos marathon app add $1.json
+}
+########################################################################
 #  zentry functions
 ########################################################################
 #- apt install all packages required for zentry
@@ -518,7 +524,7 @@ function activate() {
 function ENV() {
     #FIXME - check for deactivate function and call if it exists
     rm -fr ENV
-    python -m virtualenv ENV 
+    python2.7 -m virtualenv ENV 
     source ENV/bin/activate
     pip install -r requirements.txt
     if [ -f test-requirements.txt ]; then
