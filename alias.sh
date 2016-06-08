@@ -79,6 +79,14 @@ function dr() { sudo docker rm $1 ;}
 #- Conveniece method to show active containers                     
 function dp() { sudo docker ps ;}
 
+#- Convenience method to stop and kill any running docker containers by name
+function dkill() {
+    sudo docker stop $1
+    if [ -z "$?" ]; then
+        sudo docker kill $1
+    fi
+}
+
 #- Show all docker process, optional input match string e.g. dpa flasky
 function dpa() { 
     if [ -z "$1" ]; then
