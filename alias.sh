@@ -81,9 +81,9 @@ function dp() { sudo docker ps ;}
 
 #- Convenience method to stop and kill any running docker containers by name
 function dkill() {
-    sudo docker stop $1
+    sudo docker kill $1
     if [ -z "$?" ]; then
-        sudo docker kill $1
+        sudo docker rm $1
     fi
 }
 
