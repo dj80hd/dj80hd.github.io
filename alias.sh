@@ -438,13 +438,6 @@ function dshow(){
     echo "9:$PUSHDIR9"
 }
 
-#- pop current dir 
-dpop(){
-
-    if [ ! -z "$PUSHDIR" ]; then
-        cd $PUSHDIR
-    fi
-}
 #- debug ssl to a given host:port  e.g. ssldebug 47.222.21.83:2222
 ssldebug() {
     [[ -z "$1" ]] && { echo "You must enter a host like 127.0.0.1:8443" ; return 1 ; }
