@@ -80,11 +80,10 @@ function dr() { sudo docker rm $1 ;}
 function dp() { sudo docker ps ;}
 
 #- Convenience method to stop and kill any running docker containers by name
+#- e.g. dkill jenkins
 function dkill() {
-    sudo docker kill $1
-    if [ -z "$?" ]; then
-        sudo docker rm $1
-    fi
+    sudo docker kill $1 2>&1 > /dev/null
+    sudo docker rm $1 2>&1 > /dev/null
 }
 
 #- Show all docker process, optional input match string e.g. dpa flasky
@@ -325,12 +324,13 @@ function R() {
 }
 
 #- push current dir 
-push(){
+dpush(){
     PUSHDIR=$PWD
 }
 
 #- pop current dir 
-pop(){
+dpop(){
+
     if [ -z "$PUSHDIR"]; then
         cd $PUSHDIR
     fi
