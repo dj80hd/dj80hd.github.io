@@ -7,6 +7,18 @@
 # - something to save last command to file for reference
 # - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
+
+########################################################################
+# gradle                  
+########################################################################
+function gb() {
+    gradle build
+}
+
+functino gt() {
+    gradle test
+}
+
 ########################################################################
 #  cassandra              
 ########################################################################
