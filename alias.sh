@@ -15,7 +15,7 @@ function gb() {
     gradle build
 }
 
-functino gt() {
+function gt() {
     gradle test
 }
 
