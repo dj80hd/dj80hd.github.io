@@ -322,6 +322,111 @@ function pgkill() {
 function R() {
     cd ~/repos
 }
+#- push current dir as named dir (1,2,3,4...) 
+#- default is 0
+#
+#- e.g. 
+#- $ push 3
+#- ...
+#- $ pop 3
+#
+push() {
+    case "$1" in
+        9)
+            PUSHDIR9=$PWD
+            ;;
+         
+        8)
+            PUSHDIR8=$PWD
+            ;;
+         
+        7)
+            PUSHDIR7=$PWD
+            ;;
+         
+        6)
+            PUSHDIR6=$PWD
+            ;;
+         
+        5)
+            PUSHDIR5=$PWD
+            ;;
+         
+        4)
+            PUSHDIR4=$PWD
+            ;;
+         
+        3)
+            PUSHDIR3=$PWD
+            ;;
+         
+        2)
+            PUSHDIR2=$PWD
+            ;;
+         
+        1)
+            PUSHDIR1=$PWD
+            ;;
+         
+        *)
+            PUSHDIR0=$PWD
+            ;;
+esac
+}
+
+#- pop current dir 
+pop(){
+    case "$1" in
+        9)
+            cd $PUSHDIR9
+            PUSHDIR9=$PWD
+            ;;
+         
+        8)
+            cd $PUSHDIR8
+            PUSHDIR8=$PWD
+            ;;
+         
+        7)
+            cd $PUSHDIR7
+            PUSHDIR7=$PWD
+            ;;
+         
+        6)
+            cd $PUSHDIR6
+            PUSHDIR6=$PWD
+            ;;
+         
+        5)
+            cd $PUSHDIR5
+            PUSHDIR5=$PWD
+            ;;
+         
+        4)
+            cd $PUSHDIR4
+            PUSHDIR4=$PWD
+            ;;
+         
+        3)
+            cd $PUSHDIR3
+            PUSHDIR3=$PWD
+            ;;
+         
+        2)
+            cd $PUSHDIR2
+            PUSHDIR2=$PWD
+            ;;
+         
+        1)
+            cd $PUSHDIR1
+            PUSHDIR1=$PWD
+            ;;
+         
+        *)
+            cd $PUSHDIR0
+            ;;
+esac
+}
 
 #- push current dir 
 dpush(){
