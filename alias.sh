@@ -330,7 +330,7 @@ function R() {
 #- ...
 #- $ pop 3
 #
-dpush() {
+function dpush() {
     case "$1" in
         9)
             PUSHDIR9=$PWD
@@ -380,7 +380,7 @@ esac
 #- e.g. 
 #- $ pop 3
 #-
-dpop(){
+function dpop() {
     case "$1" in
         9)
             cd $PUSHDIR9
@@ -425,7 +425,7 @@ esac
 }
 
 #- push current dir 
-dshow(){
+function dshow(){
     echo "0:$PUSHDIR0"
     echo "1:$PUSHDIR1"
     echo "2:$PUSHDIR2"
