@@ -384,47 +384,38 @@ dpop(){
     case "$1" in
         9)
             cd $PUSHDIR9
-            PUSHDIR9=$PWD
             ;;
          
         8)
             cd $PUSHDIR8
-            PUSHDIR8=$PWD
             ;;
          
         7)
             cd $PUSHDIR7
-            PUSHDIR7=$PWD
             ;;
          
         6)
             cd $PUSHDIR6
-            PUSHDIR6=$PWD
             ;;
          
         5)
             cd $PUSHDIR5
-            PUSHDIR5=$PWD
             ;;
          
         4)
             cd $PUSHDIR4
-            PUSHDIR4=$PWD
             ;;
          
         3)
             cd $PUSHDIR3
-            PUSHDIR3=$PWD
             ;;
          
         2)
             cd $PUSHDIR2
-            PUSHDIR2=$PWD
             ;;
          
         1)
             cd $PUSHDIR1
-            PUSHDIR1=$PWD
             ;;
          
         *)
