@@ -324,14 +324,14 @@ function R() {
 }
 
 #- push current dir 
-dpush(){
+push(){
     PUSHDIR=$PWD
 }
 
 #- pop current dir 
-dpop(){
+pop(){
 
-    if [ -z "$PUSHDIR"]; then
+    if [ -z "$PUSHDIR" ]; then
         cd $PUSHDIR
     fi
 }
