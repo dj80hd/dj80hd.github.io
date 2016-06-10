@@ -7,6 +7,24 @@
 # - something to save last command to file for reference
 # - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
+########################################################################
+# ffmpeg                  
+########################################################################
+#- FIXME: need function to check if ffmpeg installed and suggest how based
+#- on OS
+
+function wav2mp3() {
+    for wavfile in "$@"
+    do
+        #- FIXME, check all args are .wav files
+        #basefile=`basename $wavfile .wav`
+        #echo "BASEFILE>>>$basefile"
+        mp3file="$wavfile.mp3"
+        #echo "WAVFILENAME>>>$wavfile"
+        #echo "MP3FILENAME>>>$mp3file"
+        ffmpeg -i "$wavfile" -vn -ar 44100 -ac 2 -ab 320k -f mp3 "$mp3file"
+    done
+}
 
 ########################################################################
 # gradle                  
