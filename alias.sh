@@ -345,9 +345,31 @@ function aptall() {
 ########################################################################
 # Misc
 ########################################################################
+
+#- recursively search for the smallest/biggest file
+#- e.g.
+# smallest wav
+# if no extension is provied, all files are used.
+#-
+function smallest() {
+    if [ -z "$1" ]; then
+        find . -type f -exec stat -f "%z %N" {} \; | sort -n|head -n 1
+    else
+        find . -iname "*.$1" -type f -exec stat -f "%z %N" {} \; | sort -n|head -n 1
+    fi
+}
+function bigest() {
+    if [ -z "$1" ]; then
+        find . -type f -exec stat -f "%z %N" {} \; | sort -n|tail -n 1
+    else
+        find . -iname "*.$1" -type f -exec stat -f "%z %N" {} \; | sort -n|tail -n 1
+    fi
+}
+#- ???
 function pgkill() {
     pgrep -f $1 | xargs sudo kill -9
 }
+
 #- cd to repos dir
 function R() {
     cd ~/repos
@@ -614,7 +636,6 @@ http://tinyurl.com/create.php \
 | uniq
 }
 
-
 #- grep history for item
 function hg() { history |grep $1 ;}
 
@@ -692,76 +713,7 @@ function getpip() {
 # Reload these aliases
 alias aupdate='curl -s -o /tmp/alias.txt http://dj80hd.github.io/alias.sh ; source /tmp/alias.txt ; rm /tmp/alias.txt'
 
-########################################################################
-# VZ stuff            
-########################################################################
-function kepolo() {
-  ssh james.werwath@kepolo.icsl.net
-}
-function opscenter() {
-    ssh -Nn -D 9090 james.werwath@mahalo.icsl.net
-    echo "Set your SOCKS proxy to localhost:9090 for url *http://65.196.125.198:8888/*"
-    
-}
-function kaiaulu2() {
-    ssh james.werwath@kaiaulu2.icsl.net 
-}
-function kaiaulu() {
-    ssh james.werwath@kaiaulu.icsl.net 
-}
-function k2() {
-    kaiaulu2
-}
-function k2a() {
-    ssh -i automation.pem automation@kaiaulu2.icsl.net 
-}
-function k2cmd() {
-    ssh james.werwath@kaiaulu2.icsl.net "$@"
-}
-function mahalo() {
-  ssh james.werwath@mahalo.icsl.net
-}
-function luau() {
-  ssh james.werwath@luau.icsl.net
-}
-function aloha() {
-    ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.13
-}
 
-function jenkins() {
-    #ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.13
-    ssh -o StrictHostKeyChecking=no -o "ProxyCommand ssh -o StrictHostKeyChecking=no -A -i ~/.ssh/id_rsa -q -l james.werwath -W %h:%p -p 2222 fcjump.icsl.net" james.werwath@10.122.98.22
-}
-
-function vztun() {
-    if [ -z "$1" ]; then
-        echo "You must specifiy a host e.g. vztun mahalo 5003"
-    elif [ -z "$2" ]; then
-        echo "You must specifiy a host e.g. vztun mahalo 5003"
-    else
-        USED=`lsof -i :$2`
-        #FIXME - Make sure we are not on the host we are tunneling to!
-        if [ -z "$USED" ]; then
-            ssh -fNT -L $2:localhost:$2 james.werwath@$1.icsl.net
-        else 
-            echo "ERROR: Looks like port $2 is used.  lsof -i :$2 to find PID" 
-        fi                     
-    fi                     
-        
-
-}
-function install_java() {
-    sudo add-apt-repository ppa:webupd8team/java -y
-    sudo apt-get update
-    sudo echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
-    sudo apt-get install oracle-java7-installer -y --force-yes
-}
-
-# Env vars
-function myenv() {
-  export VS=~/home/boxes/vz/scripts
-  export VZG=ssh://git@aloha.icsl.net:2223/aloha
-}
 function contains() {
 # contains(string, substring)
 #
