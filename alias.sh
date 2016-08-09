@@ -3,6 +3,15 @@
 #  Tip: To see all active functions and aliases use typeset -f and alias
 ########################################################################
 
+#
+# To NOT have sudo when using docker do this before sourcing this file:
+# export DOCKER_CMD=docker
+#
+if [ -z "$DOCKER_CMD" ]; then
+    DOCKER_CMD="sudo docker "
+fi
+
+
 #TODO
 # - something to save last command to file for reference
 # - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
@@ -95,46 +104,46 @@ function dupgrade() {
 }
 
 #- Conveniece method to run docer commands as sudo
-function d() { sudo docker "$@" ;}
+function d() { $DOCKER_CMD "$@" ;}
 
 #- Conveniece method to execute a command in a container
-function de() { sudo docker exec -t "$@" ;}
+function de() { $DOCKER_CMD exec -t "$@" ;}
 
 #- Conveniece method to create an interactive shell in a container
-function dei() { sudo docker exec -i -t $1 bash ;}
+function dei() { $DOCKER_CMD exec -i -t $1 bash ;}
 
 #- Conveniece method to remove a container                         
-function dr() { sudo docker rm $1 ;}
+function dr() { $DOCKER_CMD rm $1 ;}
 
 #- Conveniece method to show active containers                     
-function dp() { sudo docker ps ;}
+function dp() { $DOCKER_CMD ps ;}
 
 #- Convenience method to stop and kill any running docker containers by name
 #- e.g. dkill jenkins
 function dkill() {
-    sudo docker kill $1 2>&1 > /dev/null
-    sudo docker rm $1 2>&1 > /dev/null
+    $DOCKER_CMD kill $1 2>&1 > /dev/null
+    $DOCKER_CMD rm $1 2>&1 > /dev/null
 }
 
 #- Show all docker process, optional input match string e.g. dpa flasky
 function dpa() { 
     if [ -z "$1" ]; then
-        sudo docker ps -a 
+        $DOCKER_CMD ps -a 
     else
-        sudo docker ps -a |grep $1
+        $DOCKER_CMD ps -a |grep $1
     fi
 }
 
 #- Conveniece method to build a container                          
-function db() { sudo docker build -t $1 . ;}
-function dbnc() { sudo docker build --no-cache -t $1 . ;}
+function db() { $DOCKER_CMD build -t $1 . ;}
+function dbnc() { $DOCKER_CMD build --no-cache -t $1 . ;}
 
 #- Conveniece method to show logs in a given container             
-function dl() { sudo docker logs $1 ;}
+function dl() { $DOCKER_CMD logs $1 ;}
 
 #- Conveniece method to run an interactive disposable container w/ /tmp mapped
-function drt() { sudo docker run --rm -v /tmp:/tmp -it ubuntu:trusty ;}
-function drtp() { sudo docker run --rm -v /tmp:/tmp -it dj80hd/privates:trustyplus ;}
+function drt() { $DOCKER_CMD run --rm -v /tmp:/tmp -it ubuntu:trusty ;}
+function drtp() { $DOCKER_CMD run --rm -v /tmp:/tmp -it dj80hd/privates:trustyplus ;}
 
 #- Show report of volumes in each image (FIXME - IMPLEMENT)        
 function dv() { 
@@ -153,50 +162,50 @@ function dbv() {
 #- Show all docker images with optional grep param (e.g di bm_)
 function di() { 
     if [ -z "$1" ]; then
-        sudo docker images
+        $DOCKER_CMD images
     else
-        sudo docker images | grep $1
+        $DOCKER_CMD images | grep $1
     fi
 }
 
 #- Stop any containers matching input, no input -> stop all
 function dps() {
     if [ -z "$1" ]; then
-        for p in `sudo docker ps|grep -v IMAGE | cut -d' ' -f 1` ; do 
-            sudo docker stop $p 
+        for p in `$DOCKER_CMD ps|grep -v IMAGE | cut -d' ' -f 1` ; do 
+            $DOCKER_CMD stop $p 
         done
     else
-        for p in `sudo docker ps|grep $1 |cut -d' ' -f 1` ; do 
-            sudo docker stop $p 
+        for p in `$DOCKER_CMD ps|grep $1 |cut -d' ' -f 1` ; do 
+            $DOCKER_CMD stop $p 
         done
     fi
 }
 
 #- Stop and remove any containers matching input param
 function dprm() {
-    for p in `sudo docker ps -a|grep $1 |cut -d' ' -f 1` ; do 
-        sudo docker stop $p 
-        sudo docker rm $p 
+    for p in `$DOCKER_CMD ps -a|grep $1 |cut -d' ' -f 1` ; do 
+        $DOCKER_CMD stop $p 
+        $DOCKER_CMD rm $p 
     done
 }
 
 #- Delete all conatainers both running and stopped.
 function dprma() {
-    for p in `sudo docker ps -a|grep -v CONTAINER |cut -d' ' -f 1` ; do 
-        sudo docker stop $p 
-        sudo docker rm $p 
+    for p in `$DOCKER_CMD ps -a|grep -v CONTAINER |cut -d' ' -f 1` ; do 
+        $DOCKER_CMD stop $p 
+        $DOCKER_CMD rm $p 
     done
 }
 
 #- Get the IP address of a container.
 function dip() { 
-    sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
+    $DOCKER_CMD inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
 }
 
 #- Get IP address and ports of a container
 function dipa() { 
-    sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
-    sudo docker inspect --format '{{  .NetworkSettings.Ports  }}' $1
+    $DOCKER_CMD inspect --format '{{ .NetworkSettings.IPAddress }}' $1 
+    $DOCKER_CMD inspect --format '{{  .NetworkSettings.Ports  }}' $1
 }
 
 #- Get a cqlsh shell on a running container.  Input = container name.
@@ -206,7 +215,7 @@ function cqltest() {
        echo "e.g.   cqltest dse"
        exit 1
     fi                    
-    P=`sudo docker port $1 9160 |cut -d':' -f2`
+    P=`$DOCKER_CMD port $1 9160 |cut -d':' -f2`
     cqlsh 127.0.0.1 $P
 }
 
@@ -218,12 +227,12 @@ function dipp() {
        echo "e.g.   dipp baremetal 22                 "
        exit 1
     fi                    
-    sudo docker port $1 $2 |cut -d':' -f2
+    $DOCKER_CMD port $1 $2 |cut -d':' -f2
 }
 
 #- ?
 function dhostport() {
-    sudo docker inspect $1 |grep HostPort | cut -d '"' -f 4
+    $DOCKER_CMD inspect $1 |grep HostPort | cut -d '"' -f 4
 }
 
 ########################################################################
