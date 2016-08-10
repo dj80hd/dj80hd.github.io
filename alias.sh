@@ -274,6 +274,16 @@ function blame() {
     git --no-pager blame $1
 }
 
+#- Find all files touched by git user
+function blameuser() {
+    if [ -z "$1" ]; then
+        echo "You must specify a git user"
+        exit 1
+    else
+        git log --pretty="%H" --author="$1" | while read commit_hash; do git show --oneline --name-only $commit_hash | tail -n+2; done | sort | uniq
+    fi
+}
+
 #- Worker function for blamealls
 function blameall() {
     for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do
