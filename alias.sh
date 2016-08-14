@@ -127,10 +127,18 @@ function dkill() {
 
 #-
 #- Kill everything in docker
+#-
 function dkilla() {
     $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker kill
     $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker rm
 }
+
+#- Bump docker toolbox
+function docker-machine-restart() {
+    docker-machine restart default    
+    eval $(docker-machine env default)
+}
+
 
 #- Show all docker process, optional input match string e.g. dpa flasky
 function dpa() { 
