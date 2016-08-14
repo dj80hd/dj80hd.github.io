@@ -125,6 +125,13 @@ function dkill() {
     $DOCKER_CMD rm $1 2>&1 > /dev/null
 }
 
+#-
+#- Kill everything in docker
+function dkilla() {
+    $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker kill
+    $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker rm
+}
+
 #- Show all docker process, optional input match string e.g. dpa flasky
 function dpa() { 
     if [ -z "$1" ]; then
