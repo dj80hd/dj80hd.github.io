@@ -337,6 +337,17 @@ function gacp() {
     fi
 }
 
+#- Update README
+function greadme() {
+    BRANCH=master
+    if [ ! -z "$1" ]; then
+        BRANCH=$1
+    fi
+    git add README.md
+    git commit -m "README"
+    git push origin $BRANCH
+}
+
 #- Configure my default settings for git
 function gitme() {
     git config --global user.email "werwath@gmail.com"
