@@ -54,6 +54,10 @@ function gwb() {
     ./gradlew build $@
 }
 
+function gwp() {
+    ./gradlew publishToMavenLocal $@
+}
+
 ########################################################################
 #  cassandra              
 ########################################################################
@@ -97,6 +101,11 @@ function utestit() {
 #- Restart Docker Daemon
 function kickdocker() {
     sudo service docker.io restart
+}
+
+#- docker-machine alias
+function dm() {
+    docker-machine $@
 }
 
 #- Install latest docker
