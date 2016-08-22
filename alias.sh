@@ -38,6 +38,14 @@ function wav2mp3() {
 ########################################################################
 # gradle                  
 ########################################################################
+function gradle() {
+    REAL_GRADLE=`which gradle`
+    if [ -x ./gradlew ]; then
+        ./gradlew $@
+    else
+        $REAL_GRADLE $@
+    fi
+}
 function gb() {
     gradle build
 }
