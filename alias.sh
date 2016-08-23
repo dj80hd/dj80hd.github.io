@@ -89,12 +89,6 @@ function apt-install-zentry() {
     sudo apt-get install git curl wget build-essential python-dev python-pip python-virtualenv libev4 libev-dev libffi-dev libssl-dev -y
 }
 
-#- Clone all zentry repos
-function cloneall() {
-   git clone ssh://git@aloha.icsl.net:2223/aloha/core-ui.git
-   git clone ssh://git@aloha.icsl.net:2223/aloha/core-api.git
-   git clone ssh://git@aloha.icsl.net:2223/aloha/authn-session-authz.git
-}
 
 #- Perform unit tests for core-ui/core-api/authn
 function utestit() {
@@ -105,6 +99,12 @@ function utestit() {
 ########################################################################
 #  docker functions
 ########################################################################
+#- logout
+function dlogout() {
+    if [ -e ~/.docker/config.json ]; then
+        rm ~/.docker/config.json
+    fi
+}
 
 #- Restart Docker Daemon
 function kickdocker() {
