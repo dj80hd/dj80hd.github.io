@@ -58,10 +58,9 @@ function gw() {
     ./gradlew $@
 }
 
-function gwb() {
-    ./gradlew build $@
+function gwit() {
+    gradle integrationTest $@
 }
-
 function gwp() {
     ./gradlew publishToMavenLocal $@
 }
