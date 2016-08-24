@@ -98,6 +98,10 @@ function utestit() {
 ########################################################################
 #  docker functions
 ########################################################################
+#- remove all images
+function drma() {
+    $DOCKER_CMD rmi -f $($DOCKER_CMD images -q) 
+}
 #- logout
 function dlogout() {
     if [ -e ~/.docker/config.json ]; then
@@ -302,6 +306,9 @@ function gpom() {
 }
 function gdiff2() {
     git diff HEAD^ HEAD
+}
+function grebase() {
+    git pull --rebase origin master
 }
 #- execute any git command with --no-pager so we can pipe the output
 function gitnp() {
