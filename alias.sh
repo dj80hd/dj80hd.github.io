@@ -17,6 +17,16 @@ fi
 # - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
 ########################################################################
+# uptake                  
+########################################################################
+function bltLatest() {
+    if [ -z "$1" ]; then
+        echo "You must specify a blt product, e.g. blt-scm-git"
+        exit 1
+    fi
+    curl -s -X GET -H "Accept: application/json" https://jenkins.uptake.com/nexus/service/local/lucene/search?a=$1 |jq .data[0].latestRelease
+}
+########################################################################
 # ffmpeg                  
 ########################################################################
 #- FIXME: need function to check if ffmpeg installed and suggest how based
@@ -159,6 +169,7 @@ function dkill() {
 function dkilla() {
     $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker kill
     $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker rm
+    drma
 }
 
 #- Bump docker toolbox
@@ -301,6 +312,12 @@ function andump() {
 ########################################################################
 #Git Stuff
 ########################################################################
+
+#-Recusively remove all git info from a dir
+function gremove() {
+    #- FIXME: do an exact match for git dir ?
+    find . | grep .git | xargs rm -rf
+}
 function gpom() {
     git pull origin master
 }
@@ -385,6 +402,15 @@ function gitme() {
     git config --global user.name "Jimi Werwath"           
     git config branch.master.rebase true
     git config --global core.editor vi
+}
+
+function gdbranch() {
+    if [ -z "$1" ]; then
+        echo "you must specify a branch name"
+        exit 1
+    fi
+    git branch -d $1
+    git push origin --delete $1
 }
 
 ########################################################################
