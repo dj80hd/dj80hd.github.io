@@ -17,12 +17,24 @@ fi
 # - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
 ########################################################################
+# AWS
+########################################################################
+function awslogout() {
+    unset AWS_SECRET_ACCESS_KEY
+    unset AWS_ACCESS_KEY_ID
+    unset aws_secret_access_key
+    unset aws_access_key_id
+}
+
+
+
+########################################################################
 # uptake                  
 ########################################################################
-function bltLatest() {
+function bltlatest() {
     if [ -z "$1" ]; then
         echo "You must specify a blt product, e.g. blt-scm-git"
-        exit 1
+        return 1
     fi
     curl -s -X GET -H "Accept: application/json" https://jenkins.uptake.com/nexus/service/local/lucene/search?a=$1 |jq .data[0].latestRelease
 }
@@ -404,6 +416,17 @@ function gitme() {
     git config --global core.editor vi
 }
 
+#- Squash last n local commits:
+function gsquash() {
+    if [ -z "$1" ]; then
+        echo "you must specify the number of commits to squash. e.g. 3 = last 3 commits"
+        exit 1
+    fi
+    git reset --soft HEAD~$1 &&
+    git commit
+}
+
+#- Delete a branch locally and remotely
 function gdbranch() {
     if [ -z "$1" ]; then
         echo "you must specify a branch name"
@@ -807,6 +830,41 @@ function venv() {
 }
 function getpip() {
     sudo curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | sudo python
+}
+########################################################################
+# common            
+########################################################################
+function run_cmd() {
+    echo "CMD: $@"
+    eval $@
+    if [ $? -eq 0 ]; then
+        echo "Success from cmd: $@"
+    else
+        echo "Failure $? from cmd: $@"
+    fi
+}
+
+function check_aws_env() {
+
+    #- Check for lowercase versions of these vars.
+    #-
+    if [ ! -z "$aws_secret_access_key" ]; then
+        export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
+    fi
+    if [ ! -z "$aws_access_key_id" ]; then 
+        export AWS_ACCESS_KEY_ID=$aws_access_key_id
+    fi
+
+    #- Bomb out if no creds
+    #-
+    if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+        echo "Environment variable not set: AWS_SECRET_ACCESS_KEY"
+        exit 1
+    fi
+    if [ -z "$AWS_ACCESS_KEY_ID" ]; then 
+        echo "Environment variable not set: AWS_ACCESS_KEY_ID" 
+        exit 1
+    fi
 }
 
 ########################################################################
