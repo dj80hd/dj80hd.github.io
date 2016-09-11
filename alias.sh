@@ -324,6 +324,7 @@ function andump() {
 ########################################################################
 #Git Stuff
 ########################################################################
+#- Quick checkin of Jenkninsfile for Pipeline:
 
 #-Recusively remove all git info from a dir
 function gremove() {
@@ -420,7 +421,7 @@ function gitme() {
 function gsquash() {
     if [ -z "$1" ]; then
         echo "you must specify the number of commits to squash. e.g. 3 = last 3 commits"
-        exit 1
+        return 1
     fi
     git reset --soft HEAD~$1 &&
     git commit
@@ -434,6 +435,11 @@ function gdbranch() {
     fi
     git branch -d $1
     git push origin --delete $1
+}
+
+#- Ammend a commit without changing message
+function gmend() {
+    git commit --amend --no-edit
 }
 
 ########################################################################
@@ -768,7 +774,10 @@ function hg() { history |grep $1 ;}
 function pg() { ps aux |grep $1 | grep -v grep ;}
 
 #- make sure every .sh file in this dir is executable.
-function chx() { chmod +x *sh ;}
+function chx() { 
+    chmod +x *sh
+    chmod 600 *pem
+}
 function mkcd {
     if [ -z "$1" ]; then
         echo "You must enter a directory to be created."

@@ -1,0 +1,5 @@
+http://console.common.int.uptake.com/marathon/ui/#/apps
+http://console.common.int.uptake.com/mesos/#/frameworks
+
+
+
