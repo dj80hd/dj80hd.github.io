@@ -36,7 +36,9 @@ function bltlatest() {
         echo "You must specify a blt product, e.g. blt-scm-git"
         return 1
     fi
-    curl -s -X GET -H "Accept: application/json" https://jenkins.uptake.com/nexus/service/local/lucene/search?a=$1 |jq .data[0].latestRelease
+    PLUGIN=$1
+    PLUGIN=`echo $PLUGIN | tr . -`
+    curl -s -X GET -H "Accept: application/json" https://jenkins.uptake.com/nexus/service/local/lucene/search?a=$PLUGIN |jq .data[0].latestRelease
 }
 ########################################################################
 # ffmpeg                  
@@ -167,6 +169,10 @@ function dr() { $DOCKER_CMD rm $1 ;}
 
 #- Conveniece method to show active containers                     
 function dp() { $DOCKER_CMD ps ;}
+
+#- Conveniece method to run containers
+#- e.g. drit alpine env
+function drit() { $DOCKER_CMD run --rm -it $@ ;}
 
 #- Convenience method to stop and kill any running docker containers by name
 #- e.g. dkill jenkins
