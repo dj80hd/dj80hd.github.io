@@ -430,7 +430,7 @@ function gsquash() {
         return 1
     fi
     git reset --soft HEAD~$1 &&
-    git commit
+    git commit ${@:2}
 }
 
 #- Delete a branch locally and remotely
@@ -882,6 +882,14 @@ function check_aws_env() {
     fi
 }
 
+function vptest() {
+  D=$PWD
+  cd ~/repos/vinyl_pricer_test
+  ./gradlew build
+  RET=$?
+  cd $D
+  return $?
+}
 ########################################################################
 # Alias management
 ########################################################################
