@@ -31,6 +31,9 @@ function awslogout() {
 ########################################################################
 # uptake                  
 ########################################################################
+function uptunnel() {
+  ssh -D 9666 -f -C -q -N -i ~/repos/p/other_keys/do_id_rsa root@104.236.232.3
+}
 function bltlatest() {
     if [ -z "$1" ]; then
         echo "You must specify a blt product, e.g. blt-scm-git"
@@ -336,6 +339,9 @@ function andump() {
 function gremove() {
     #- FIXME: do an exact match for git dir ?
     find . | grep .git | xargs rm -rf
+}
+function gsize() {
+  git count-objects -vH
 }
 function gpom() {
     git pull origin master
@@ -899,6 +905,14 @@ function vptest() {
 ########################################################################
 # Reload these aliases
 alias aupdate='curl -s -o /tmp/alias.txt http://dj80hd.github.io/alias.sh ; source /tmp/alias.txt ; rm /tmp/alias.txt'
+function apush() {
+  D=$PWD
+  cd ~/repos/dj80hd.github.io/
+  git add .
+  git commit -m auto_commit
+  git push origin master
+  cd $D
+}
 
 
 function contains() {
