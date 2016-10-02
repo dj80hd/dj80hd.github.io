@@ -690,13 +690,16 @@ function zipdir() {
 function curli() {
     curl -L -i -k "$@"
 }
+function curls() {
+    curl -s "$@"
+}
 
 #- Curl a local secure port (shorthand for curl https://127.0.0.1:8443)
 function curlslp() {
     if [ -z "$1" ]; then
         echo "port is required, e.g. curlslp 8443  "
     else
-        curl -i -k -L https://127.0.0.1:$1
+        curli https://127.0.0.1:$1
     fi
 }
 
@@ -705,7 +708,7 @@ function curllp() {
     if [ -z "$1" ]; then
         echo "port is required, e.g. curllp 80  "
     else
-        curl -i -k http://127.0.0.1:$1
+        curli http://127.0.0.1:$1
     fi
 }
 
