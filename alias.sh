@@ -490,7 +490,7 @@ function aptall() {
 ########################################################################
 #
 
-rawurlencode() {
+function rawurlencode() {
   local string="${1}"
   local strlen=${#string}
   local encoded=""
@@ -686,7 +686,11 @@ function rdd() {
         find . -name $1 -type d -print0|xargs -0 rm -r --
     fi  
 }
-
+function gunzipurl() {
+  set -x
+  curl -sSL $1 | tar -C "." -zxf - 2>/dev/null
+  set +x
+}
 #- Recusive ls sorted by size
 function sortsize() {
     find . -type f -print0 | xargs -0 ls -la | awk '{print int($5/1000) " KB\t" $9}' | sort -n -r -k1
@@ -966,6 +970,10 @@ LH=http://127.0.0.1
 # - Ensure oS:
 # [[ $(lsb_release -a) =~ "14.04" ]] || { echo "You must run this on ubuntu 14.04" ; exit 1 ; }
 #
+# BEST WAY:
+# foo >/dev/null 2>&1
+# test "0" = "$?" || error_exit "BAD COMMAND foo" 
+#
 # - Current dir of script
 #DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 #
@@ -988,7 +996,10 @@ LH=http://127.0.0.1
 # - One line error exits
 # test "0" = "$?" || { echo "ERROR: Copy error [2]" ; exit $?; }
 # test -f $FILE|| { echo "ERROR: FILE does not exist: $FILE" ; exit $?; }
-#
+# 
+# - Default values
+# ZK_HOST=${ZK_HOST:-dockerhost}
+# ZK_PORT=${ZK_PORT:-2181}``
 # - Check if linux
 # - Command output contains
 # [[ $(/usr/local/bin/monit --version) =~ "5.5" ]] || echo "NOT OK"#
@@ -1014,3 +1025,9 @@ LH=http://127.0.0.1
 #    esac
 #    shift # past argument or value
 #done
+#
+# Top of every bash script:
+##!/usr/bin/env bash
+#[ ! -z "${TRACE:-}"  ] && set -o xtrace  # trace what gets executed
+#set -o errexit # exit when a command fails.
+#__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # set current directory
