@@ -686,7 +686,7 @@ function rdd() {
         find . -name $1 -type d -print0|xargs -0 rm -r --
     fi  
 }
-function gunzipurl() {
+function unzipurl() {
   set -x
   curl -sSL $1 | tar -C "." -zxf - 2>/dev/null
   set +x
