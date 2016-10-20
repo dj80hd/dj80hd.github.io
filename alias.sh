@@ -454,6 +454,15 @@ function gmend() {
     git commit --amend --no-edit
 }
 
+#alias gpushc='git push origin $(git status|head -n 1|se )'
+#functino gpushc() {
+#  BRANCH=`git status | head -n 1 | sed 's/On branch //')`
+#  git push origin $BRANCH
+#}
+
+function current_branch() {
+  git status |head -n 1 | sed 's/.*On branch //'
+}
 ########################################################################
 # Vagrant
 ########################################################################
@@ -489,7 +498,15 @@ function aptall() {
 # Misc
 ########################################################################
 #
+#- Find disk usage.
+function du1() {
+  du -khx | egrep -v "\./.+/" | sort -n
+}
 
+#-Find disk usage  of old files
+function du2() {
+  find . -atime +120 -type f -exec du -csh '{}' + | tail -1
+}
 function rawurlencode() {
   local string="${1}"
   local strlen=${#string}
@@ -926,7 +943,10 @@ function vptest() {
 # Alias management
 ########################################################################
 # Reload these aliases
+#wget -qO- http://dj80hd.github.io/alias.sh > /tmp/x && source /tmp/x  <-- ANOTHER WAY
+# 
 alias aupdate='curl -s -o /tmp/alias.txt http://dj80hd.github.io/alias.sh ; source /tmp/alias.txt ; rm /tmp/alias.txt'
+alias asource='source ~/repos/dj80hd.github.io/alias.sh'
 function apush() {
   D=$PWD
   cd ~/repos/dj80hd.github.io/
