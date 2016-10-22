@@ -454,11 +454,15 @@ function gmend() {
     git commit --amend --no-edit
 }
 
-#alias gpushc='git push origin $(git status|head -n 1|se )'
-#functino gpushc() {
-#  BRANCH=`git status | head -n 1 | sed 's/On branch //')`
-#  git push origin $BRANCH
-#}
+#- Push current branch to origin
+#- DOES NOT WORK GREAT YET
+function gpushc() {
+  git config --global push.default matching
+  #-FIXME use origin as default but allow a different remote to be passed
+  THIS_BRANCH=$(git status|head -n 1|sed 's/On branch //')
+  echo "THIS BRANCH: ${THIS_BRANCH}"
+  git push --set-upstream origin $THIS_BANCH
+}
 
 function current_branch() {
   git status |head -n 1 | sed 's/.*On branch //'
@@ -498,6 +502,14 @@ function aptall() {
 # Misc
 ########################################################################
 #
+
+#- Slurps STDIN and removes any leading or trailing doublequotes
+function noquotes() {
+  while read a; do 
+    echo "$a"| sed -e 's/^\"//' -e 's/\"$//'
+  done
+}
+
 #- Find disk usage.
 function du1() {
   du -khx | egrep -v "\./.+/" | sort -n
@@ -946,6 +958,7 @@ function vptest() {
 #wget -qO- http://dj80hd.github.io/alias.sh > /tmp/x && source /tmp/x  <-- ANOTHER WAY
 # 
 alias aupdate='curl -s -o /tmp/alias.txt http://dj80hd.github.io/alias.sh ; source /tmp/alias.txt ; rm /tmp/alias.txt'
+alias aupdate='eval "$(curl -s http://dj80hd.github.io/alias.sh)"'
 alias asource='source ~/repos/dj80hd.github.io/alias.sh'
 function apush() {
   D=$PWD
@@ -980,16 +993,20 @@ function contains() {
 #########################################################
 alias copy='cp'
 alias h='history'
+alias ctool='$R/ctool/ctool'
 
 LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############
-# - See if command exists:
-# if ! type docker >/dev/null ; then { echo "docker must be installed " ; exit 1 ; } fi
 # - Ensure oS:
 # [[ $(lsb_release -a) =~ "14.04" ]] || { echo "You must run this on ubuntu 14.04" ; exit 1 ; }
 #
+#- Remove lead and trail double quotes 
+# ' | sed -e 's/^\"//' -e 's/\"$//'"
+
+# - See if command exists:
+# if ! type docker >/dev/null ; then { echo "docker must be installed " ; exit 1 ; } fi
 # BEST WAY:
 # foo >/dev/null 2>&1
 # test "0" = "$?" || error_exit "BAD COMMAND foo" 
