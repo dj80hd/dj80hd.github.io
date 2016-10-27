@@ -425,6 +425,9 @@ function greadme() {
 function gitme() {
     git config --global user.email "werwath@gmail.com"
     git config --global user.name "Jimi Werwath"           
+    git config --global alias.co checkout
+    git config --global alias.br branch
+    git config --global alias.ci commit
     git config branch.master.rebase true
     git config --global core.editor vi
 }
@@ -1005,6 +1008,11 @@ LH=http://127.0.0.1
 #- Remove lead and trail double quotes 
 # ' | sed -e 's/^\"//' -e 's/\"$//'"
 
+#- Getting part of line
+#- get env var names:
+# $ env |awk -F "=" '{print $1}'
+#
+#
 # - See if command exists:
 # if ! type docker >/dev/null ; then { echo "docker must be installed " ; exit 1 ; } fi
 # BEST WAY:
