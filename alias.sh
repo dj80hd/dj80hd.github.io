@@ -1038,10 +1038,21 @@ LH=http://127.0.0.1
 # exec 6>&- # close output connection
 # exec 6<&- # close input connection
 #
+#- One line ifs
+#- if [ $RANDOM -lt 10000  ]; then echo ONE ; else echo TWO ; fi;
+#
 # - One line error exits
 # test "0" = "$?" || { echo "ERROR: Copy error [2]" ; exit $?; }
 # test -f $FILE|| { echo "ERROR: FILE does not exist: $FILE" ; exit $?; }
 # 
+
+## Set magic variables for current file & dir
+#__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#__file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
+#__base="$(basename ${__file} .sh)"
+#__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this as it depends on your app
+#
+#arg1="${1:-}"
 # - Default values
 # ZK_HOST=${ZK_HOST:-dockerhost}
 # ZK_PORT=${ZK_PORT:-2181}``
