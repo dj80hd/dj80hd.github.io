@@ -34,6 +34,9 @@ function awslogout() {
 function uptunnel() {
   ssh -D 9666 -f -C -q -N -i ~/repos/p/other_keys/do_id_rsa root@104.236.232.3
 }
+function cijenkins() {
+  ssh -i /t/creds/centos-dev2.pem centos@jenkins.ci.uptake.com
+}
 function bltlatest() {
     if [ -z "$1" ]; then
         echo "You must specify a blt product, e.g. blt-scm-git"
@@ -125,6 +128,11 @@ function utestit() {
 ########################################################################
 #  docker functions
 ########################################################################
+#- cleans up space
+function dclean() {
+  $DOCKER_CMD rm $(docker ps -q -f 'status=exited')
+  $DOCKER_CMD rmi $(docker images -q -f "dangling=true")
+}
 #- remove all images
 function drma() {
     $DOCKER_CMD rmi -f $($DOCKER_CMD images -q) 
@@ -334,7 +342,9 @@ function andump() {
 #Git Stuff
 ########################################################################
 #- Quick checkin of Jenkninsfile for Pipeline:
-
+function gjenkins() {
+  git add Jenkinsfile && git commit --amend --no-edit && git push -f
+}
 #-Recusively remove all git info from a dir
 function gremove() {
     #- FIXME: do an exact match for git dir ?
@@ -470,6 +480,11 @@ function gpushc() {
 function current_branch() {
   git status |head -n 1 | sed 's/.*On branch //'
 }
+
+#- Clone all remote branches
+function gbranches() {
+  for x in $(git branch -r |grep -v HEAD |grep -v master | grep origin |awk -F "/" '{print $2}'); do git checkout -b $x origin/$x ; done;
+}
 ########################################################################
 # Vagrant
 ########################################################################
@@ -510,6 +525,11 @@ function aptall() {
 function noquotes() {
   while read a; do 
     echo "$a"| sed -e 's/^\"//' -e 's/\"$//'
+  done
+}
+function escquotes() {
+  while read a; do 
+    echo "$a"| sed -e 's/\"/\\\"/g'
   done
 }
 
@@ -1040,6 +1060,7 @@ LH=http://127.0.0.1
 #
 #- One line ifs
 #- if [ $RANDOM -lt 10000  ]; then echo ONE ; else echo TWO ; fi;
+#- [ -n "$HTTPS_PORT" ] && PARAMS="$PARAMS --httpsPort=$HTTPS_PORT"
 #
 # - One line error exits
 # test "0" = "$?" || { echo "ERROR: Copy error [2]" ; exit $?; }
@@ -1051,7 +1072,16 @@ LH=http://127.0.0.1
 #__file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
 #__base="$(basename ${__file} .sh)"
 #__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this as it depends on your app
-#
+
+#- PROMPT
+#while true; do
+#    read -p "Do you wish to install this program?" yn
+#    case $yn in
+#        [Yy]* ) make install; break;;
+#        [Nn]* ) exit;;
+#        * ) echo "Please answer yes or no.";;
+#    esac
+#done
 #arg1="${1:-}"
 # - Default values
 # ZK_HOST=${ZK_HOST:-dockerhost}
