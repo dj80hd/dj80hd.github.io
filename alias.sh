@@ -31,6 +31,9 @@ function awslogout() {
 ########################################################################
 # uptake                  
 ########################################################################
+function ss() {
+  docker run --rm uptake/ss $@
+}
 function uptunnel() {
   ssh -D 9666 -f -C -q -N -i ~/repos/p/other_keys/do_id_rsa root@104.236.232.3
 }
