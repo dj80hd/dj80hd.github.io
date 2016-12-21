@@ -37,6 +37,12 @@ function uptunnel() {
 function cijenkins() {
   ssh -i /t/creds/centos-dev2.pem centos@jenkins.ci.uptake.com
 }
+function upssh() {
+  ssh -i /t/creds/centos-dev2.pem centos@$1
+}
+function upssh2() {
+  ssh -i /t/creds/uptake-internal.pem centos@$1
+}
 function bltlatest() {
     if [ -z "$1" ]; then
         echo "You must specify a blt product, e.g. blt-scm-git"
@@ -341,6 +347,16 @@ function andump() {
 ########################################################################
 #Git Stuff
 ########################################################################
+#- force push a file to branch
+function gafp() {
+  if [ "$1" = "" ] || [ "$2" = "" ] ; then
+    echo "You must specify a filename and a branch."
+  else
+    git add $1
+    git commit --amend --no-edit
+    git push origin $2 -f
+  fi
+}
 #- Quick checkin of Jenkninsfile for Pipeline:
 function gjenkins() {
   git add Jenkinsfile && git commit --amend --no-edit && git push -f
@@ -520,6 +536,11 @@ function aptall() {
 # Misc
 ########################################################################
 #
+
+#- Remove any tailing whitespace in a file
+function notail() {
+  sed -i'' -e 's/[[:blank:]]*$//' $1
+}
 
 #- Slurps STDIN and removes any leading or trailing doublequotes
 function noquotes() {
