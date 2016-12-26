@@ -17,6 +17,12 @@ fi
 # - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
 ########################################################################
+# MAC ONLY
+########################################################################
+function term() {
+open -a Terminal "`pwd`"
+}
+########################################################################
 # AWS
 ########################################################################
 function awslogout() {
@@ -31,6 +37,9 @@ function awslogout() {
 ########################################################################
 # uptake                  
 ########################################################################
+function ggs() {
+  cd $R/guiltyspark
+}
 function ss() {
   docker run --rm uptake/ss $@
 }
@@ -539,7 +548,12 @@ function aptall() {
 # Misc
 ########################################################################
 #
-
+#- edit scratch file 
+function tmp() {
+  local f="${1:-/tmp/x}"
+  rm $f
+  vi $f
+}
 #- Remove any tailing whitespace in a file
 function notail() {
   sed -i'' -e 's/[[:blank:]]*$//' $1
@@ -565,6 +579,10 @@ function du1() {
 #-Find disk usage  of old files
 function du2() {
   find . -atime +120 -type f -exec du -csh '{}' + | tail -1
+}
+
+function dudir() {
+  du -sh .[!.]* * | sort -hr | head -n10
 }
 function rawurlencode() {
   local string="${1}"
@@ -888,8 +906,8 @@ function pg() { ps aux |grep $1 | grep -v grep ;}
 
 #- make sure every .sh file in this dir is executable.
 function chx() { 
-    chmod +x *sh
-    chmod 600 *pem
+    chmod +x *sh 2>&1 >/dev/null || true
+    chmod 600 *pem 2>&1 >/dev/null || true
 }
 function mkcd {
     if [ -z "$1" ]; then
