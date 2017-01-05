@@ -473,11 +473,17 @@ function gitme() {
 #- Squash last n local commits:
 function gsquash() {
     if [ -z "$1" ]; then
-        echo "you must specify the number of commits to squash. e.g. 3 = last 3 commits"
+        echo "you must specify the number of commits to squash:"
+        echo "e.g. $0 3 commit message here"
+        return 1
+    fi
+    if [ -z "$2" ]; then
+        echo "you must specify a commit message:"
+        echo "e.g. $0 3 commit message here"
         return 1
     fi
     git reset --soft HEAD~$1 &&
-    git commit ${@:2}
+    git commit -m "${@:2}"
 }
 
 #- Delete a branch locally and remotely
