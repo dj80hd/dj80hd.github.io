@@ -35,36 +35,6 @@ function awslogout() {
 
 
 ########################################################################
-# uptake                  
-########################################################################
-function ggs() {
-  cd $R/guiltyspark
-}
-function ss() {
-  docker run --rm uptake/ss $@
-}
-function uptunnel() {
-  ssh -D 9666 -f -C -q -N -i ~/repos/p/other_keys/do_id_rsa root@104.236.232.3
-}
-function cijenkins() {
-  ssh -i /t/creds/centos-dev2.pem centos@jenkins.ci.uptake.com
-}
-function upssh() {
-  ssh -i /t/creds/centos-dev2.pem centos@$1
-}
-function upssh2() {
-  ssh -i /t/creds/uptake-internal.pem centos@$1
-}
-function bltlatest() {
-    if [ -z "$1" ]; then
-        echo "You must specify a blt product, e.g. blt-scm-git"
-        return 1
-    fi
-    PLUGIN=$1
-    PLUGIN=`echo $PLUGIN | tr . -`
-    curl -s -X GET -H "Accept: application/json" https://jenkins.uptake.com/nexus/service/local/lucene/search?a=$PLUGIN |jq .data[0].latestRelease
-}
-########################################################################
 # ffmpeg                  
 ########################################################################
 #- FIXME: need function to check if ffmpeg installed and suggest how based
@@ -484,6 +454,10 @@ function gsquash() {
     fi
     git reset --soft HEAD~$1 &&
     git commit -m "${@:2}"
+}
+#- Get current branch
+function cbranch() {
+  git rev-parse --abbrev-ref HEAD
 }
 
 #- Delete a branch locally and remotely
