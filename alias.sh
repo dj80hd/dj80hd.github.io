@@ -331,17 +331,24 @@ function andump() {
 ########################################################################
 #- force push a file to branch
 function gafp() {
-  if [ "$1" = "" ] || [ "$2" = "" ] ; then
+  local BRANCH=$2
+
+  if [ -z "${BRANCH}" ] ; then
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  fi
+
+  if [ "$1" = "" ] || [ "${BRANCH}" = "" ] ; then
     echo "You must specify a filename and a branch."
   else
     git add $1
     git commit --amend --no-edit
-    git push origin $2 -f
+    git push origin ${BRANCH} --force-with-lease
   fi
 }
+
 #- Quick checkin of Jenkninsfile for Pipeline:
 function gjenkins() {
-  git add Jenkinsfile && git commit --amend --no-edit && git push -f
+  git add Jenkinsfile && git commit --amend --no-edit && git push --force-with-lease
 }
 #-Recusively remove all git info from a dir
 function gremove() {
@@ -455,7 +462,18 @@ function gsquash() {
     git reset --soft HEAD~$1 &&
     git commit -m "${@:2}"
 }
-#- Get current branch
+function gmakeremote() {
+  git fetch orgin
+  git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+}
+function gfpc() {
+  git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
+}
+
+function gpc() {
+  git push origin $(git rev-parse --abbrev-ref HEAD)
+}
+
 function cbranch() {
   git rev-parse --abbrev-ref HEAD
 }
@@ -493,6 +511,8 @@ function current_branch() {
 function gbranches() {
   for x in $(git branch -r |grep -v HEAD |grep -v master | grep origin |awk -F "/" '{print $2}'); do git checkout -b $x origin/$x ; done;
 }
+
+
 ########################################################################
 # Vagrant
 ########################################################################
@@ -901,11 +921,13 @@ function mkcd {
 #- Alias for source ~/.bashrc
 function sbrc() {
     source ~/.bashrc
+    source ~/.bash_profile
 }
 
 #- Alias for cat ~/.bashrc
 function cbrc() {
     cat ~/.bashrc
+    cat ~/.bash_profile
 }
 
 #- find and grep                                                  
@@ -1002,9 +1024,8 @@ function vptest() {
 # Reload these aliases
 #wget -qO- http://dj80hd.github.io/alias.sh > /tmp/x && source /tmp/x  <-- ANOTHER WAY
 # 
-alias aupdate='curl -s -o /tmp/alias.txt http://dj80hd.github.io/alias.sh ; source /tmp/alias.txt ; rm /tmp/alias.txt'
 alias aupdate='eval "$(curl -s http://dj80hd.github.io/alias.sh)"'
-alias asource='source ~/repos/dj80hd.github.io/alias.sh'
+alias asource='source ~/.bash_profile && source ~/repos/dj80hd.github.io/alias.sh'
 function apush() {
   D=$PWD
   cd ~/repos/dj80hd.github.io/
@@ -1139,3 +1160,7 @@ LH=http://127.0.0.1
 #[ ! -z "${TRACE:-}"  ] && set -o xtrace  # trace what gets executed
 #set -o errexit # exit when a command fails.
 #__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # set current directory
+#__PROGNAME="$(basename $0)"
+#__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#__ROOT="$(cd "$(dirname "${__DIR}")" && pwd)"
+
