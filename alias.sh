@@ -98,6 +98,9 @@ function dks() {
 function ma() {
     dcos marathon app add $1.json
 }
+function mesosinfo() {
+  dcos task log --follow $1
+}
 ########################################################################
 #  zentry functions
 ########################################################################
@@ -117,13 +120,39 @@ function utestit() {
 #  docker functions
 ########################################################################
 #- cleans up space
+
+function indocker() {
+  IMAGE_NAME=docker_tmp_deleteme
+
+  if [ ! -z "$1" ] ; then
+    IMAGE_NAME=$1
+  else
+    if [ ! -e Dockerfile ] ; then
+      echo "There is no Dockerfile in this directory."
+      return
+    fi
+    $DOCKER_CMD build -t ${IMAGE_NAME} .
+  fi
+  $DOCKER_CMD run -v $PWD:/app --workdir /app --rm -it ${IMAGE_NAME} sh
+}
 function dclean() {
   $DOCKER_CMD rm $(docker ps -q -f 'status=exited')
   $DOCKER_CMD rmi $(docker images -q -f "dangling=true")
 }
+function dstopall() {
+  $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
+}
+
+function dall() {
+    $DOCKER_CMD images
+    $DOCKER_CMD ps -a
+}
+
 #- remove all images
 function drma() {
-    $DOCKER_CMD rmi -f $($DOCKER_CMD images -q) 
+    $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
+    $DOCKER_CMD rm $($DOCKER_CMD ps -a -q)
+    $DOCKER_CMD rmi $($DOCKER_CMD images -q)
 }
 #- logout
 function dlogout() {
@@ -240,13 +269,15 @@ function di() {
 }
 
 #- Stop any containers matching input, no input -> stop all
-function dps() {
+function dstop() {
     if [ -z "$1" ]; then
         for p in `$DOCKER_CMD ps|grep -v IMAGE | cut -d' ' -f 1` ; do 
+            echo "Stopping $p"
             $DOCKER_CMD stop $p 
         done
     else
         for p in `$DOCKER_CMD ps|grep $1 |cut -d' ' -f 1` ; do 
+            echo "Stopping $p"
             $DOCKER_CMD stop $p 
         done
     fi
@@ -329,6 +360,17 @@ function andump() {
 ########################################################################
 #Git Stuff
 ########################################################################
+#- Put last commit on new branch
+function lastcommitnewbranch() {
+  git branch $1 jimi
+  if [ -z "$1" ]; then
+    echo "USAGE: lastcommitnewbranch newbranchname"
+  else
+    git branch $1
+    git reset --hard HEAD~1
+    git checkout $1
+  fi                    
+}
 #- force push a file to branch
 function gafp() {
   local BRANCH=$2
@@ -348,7 +390,9 @@ function gafp() {
 
 #- Quick checkin of Jenkninsfile for Pipeline:
 function gjenkins() {
-  git add Jenkinsfile && git commit --amend --no-edit && git push --force-with-lease
+  git add Jenkinsfile && \
+  git commit --amend --no-edit && \
+  git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
 }
 #-Recusively remove all git info from a dir
 function gremove() {
@@ -466,7 +510,24 @@ function gmakeremote() {
   git fetch orgin
   git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
 }
+function gapc() {
+  FILES=.
+  COMMENT=more
+  if [ ! -z "$1" ]; then
+    FILES=$1
+  fi
+  git add ${FILES}
+  if [ ! -z "$2" ]; then
+    COMMENT=$@
+  fi
+  git commit -m "${COMMENT}"             
+  git push origin $(git rev-parse --abbrev-ref HEAD) 
+}
 function gfpc() {
+  if [ ! -z "$1" ]; then
+    git add $1
+    git commit --amend --no-edit
+  fi
   git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
 }
 
@@ -478,14 +539,22 @@ function cbranch() {
   git rev-parse --abbrev-ref HEAD
 }
 
+function gdrbranch() {
+  if [ -z "$1" ]; then
+    echo "you must specify a branch match string"
+    echo "DANGER: DELETES MANY REMOTE BRANCHES BE CAREFUL!"
+  else
+    git branch -r | cut -c 10- |grep $1 | xargs git push origin --delete
+  fi
+}
 #- Delete a branch locally and remotely
 function gdbranch() {
     if [ -z "$1" ]; then
         echo "you must specify a branch name"
         exit 1
     fi
-    git branch -d $1
     git push origin --delete $1
+    git branch -D $1
 }
 
 #- Ammend a commit without changing message
@@ -548,7 +617,10 @@ function aptall() {
 # Misc
 ########################################################################
 #
-#- edit scratch file 
+function clr() {
+  clear
+  reset
+}
 function tmp() {
   local f="${1:-/tmp/x}"
   rm $f
@@ -936,7 +1008,7 @@ function fg() {
     if [ -z "$2" ]; then
         grep -r $1 . 
     else
-        grep --include="*.$2" -r $1 .
+        grep --include="*$2" -r $1 .
     fi
 }
 #- recursively delete files of type                               
@@ -1012,7 +1084,7 @@ function check_aws_env() {
 function vptest() {
   D=$PWD
   cd ~/repos/vinyl_pricer_test
-  ./gradlew build
+  ./gradlew build --rerun-tasks
   RET=$?
   cd $D
   return $RET
@@ -1108,6 +1180,8 @@ LH=http://127.0.0.1
 # - One line error exits
 # test "0" = "$?" || { echo "ERROR: Copy error [2]" ; exit $?; }
 # test -f $FILE|| { echo "ERROR: FILE does not exist: $FILE" ; exit $?; }
+#[ ! -z "${BITBUCKET_PASSWORD}" ]  ||  { echo "no password!" ; exit 1;}
+#[ ! -z "${BITBUCKET_USERNAME}" ]  ||  { echo "no username!" ; exit 1;}
 # 
 
 ## Set magic variables for current file & dir
