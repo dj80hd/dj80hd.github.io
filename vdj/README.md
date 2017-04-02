@@ -16,7 +16,7 @@
 (_)d       |_|h   | m. 96 right
       __          | n. 102 play/pause
      |__|i        | o. 104 nudge back
- _	        _     | p. 103 nudge foward
+ _          _     | p. 103 nudge foward
 (_)j       |_|k   | q. 109 loopexit HC1
                   | r. 110 loopexit HC2
   . . . . . .     | s. 115 loopexit HC3
@@ -60,7 +60,10 @@
 
 ```
 
+## CROSSFADER LAYOUT
 
+```
+```
 
 
 ## USEFUL VDJ SCRIPT
@@ -97,3 +100,8 @@
   <map value="0-120" action="deck default seek -2" />
   <map value="0-121" action="deck default seek +2" />
 ```
+
+
+## Video Design
+
+1. random vid on deck default at random point

@@ -33,7 +33,6 @@ function awslogout() {
 }
 
 
-
 ########################################################################
 # ffmpeg                  
 ########################################################################
@@ -394,6 +393,11 @@ function gjenkins() {
   git commit --amend --no-edit && \
   git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
 }
+function gajenkins() {
+  git add Jenkinsfile && \
+  git commit -m Jenkinsfile && \
+  git push origin $(git rev-parse --abbrev-ref HEAD)
+}
 #-Recusively remove all git info from a dir
 function gremove() {
     #- FIXME: do an exact match for git dir ?
@@ -631,12 +635,18 @@ function notail() {
   sed -i'' -e 's/[[:blank:]]*$//' $1
 }
 
+function trim() {
+  while read a; do 
+    echo "$a"| sed 's/^[[:blank:]]*$//' | sed 's/^[[:blank:]]*//'
+  done
+}
 #- Slurps STDIN and removes any leading or trailing doublequotes
 function noquotes() {
   while read a; do 
     echo "$a"| sed -e 's/^\"//' -e 's/\"$//'
   done
 }
+
 function escquotes() {
   while read a; do 
     echo "$a"| sed -e 's/\"/\\\"/g'
@@ -1231,8 +1241,8 @@ LH=http://127.0.0.1
 #
 # Top of every bash script:
 ##!/usr/bin/env bash
+#set -eou pipefail
 #[ ! -z "${TRACE:-}"  ] && set -o xtrace  # trace what gets executed
-#set -o errexit # exit when a command fails.
 #__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # set current directory
 #__PROGNAME="$(basename $0)"
 #__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
