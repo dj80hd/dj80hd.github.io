@@ -31,8 +31,9 @@ function awslogout() {
     unset aws_secret_access_key
     unset aws_access_key_id
 }
-
-
+function us-east-1() {
+  export AWS_REGION=us-east-1
+}
 ########################################################################
 # ffmpeg                  
 ########################################################################
@@ -120,6 +121,12 @@ function utestit() {
 ########################################################################
 #- cleans up space
 
+function dcu() {
+  docker-compose up
+}
+function dcd() {
+  docker-compose down
+}
 function indocker() {
   IMAGE_NAME=docker_tmp_deleteme
 
@@ -134,9 +141,11 @@ function indocker() {
   fi
   $DOCKER_CMD run -v $PWD:/app --workdir /app --rm -it ${IMAGE_NAME} sh
 }
+
 function dclean() {
   $DOCKER_CMD rm $(docker ps -q -f 'status=exited')
   $DOCKER_CMD rmi $(docker images -q -f "dangling=true")
+  $DOCKER_CMD images -aq | xargs -n 10 docker rmi
 }
 function dstopall() {
   $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
@@ -147,11 +156,15 @@ function dall() {
     $DOCKER_CMD ps -a
 }
 
+function drm() {
+  $DOCKER_CMD rm -f $1
+}
+
 #- remove all images
 function drma() {
     $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
-    $DOCKER_CMD rm $($DOCKER_CMD ps -a -q)
-    $DOCKER_CMD rmi $($DOCKER_CMD images -q)
+    $DOCKER_CMD rm -f $($DOCKER_CMD ps -a -q)
+    $DOCKER_CMD rmi -f $($DOCKER_CMD images -q)
 }
 #- logout
 function dlogout() {
@@ -331,6 +344,15 @@ function dipp() {
     $DOCKER_CMD port $1 $2 |cut -d':' -f2
 }
 
+function dbandp() {
+  if [ -z "$1" ]; then
+    echo "you must specify a docker image"
+  else
+    $DOCKER_CMD build -t $1 .
+    $DOCKER_CMD push $1
+  fi
+}
+
 #- ?
 function dhostport() {
     $DOCKER_CMD inspect $1 |grep HostPort | cut -d '"' -f 4
@@ -359,6 +381,17 @@ function andump() {
 ########################################################################
 #Git Stuff
 ########################################################################
+
+#Tag and push it
+function gtag() {
+  if [ -z "$1" ]; then
+    echo "USAGE: lastcommitnewbranch newbranchname"
+  else
+    git tag $1
+    git push origin --tags
+  fi
+}
+
 #- Put last commit on new branch
 function lastcommitnewbranch() {
   git branch $1 jimi
@@ -368,8 +401,9 @@ function lastcommitnewbranch() {
     git branch $1
     git reset --hard HEAD~1
     git checkout $1
-  fi                    
+  fi
 }
+
 #- force push a file to branch
 function gafp() {
   local BRANCH=$2
@@ -409,10 +443,16 @@ function gsize() {
 function gpom() {
     git pull origin master
 }
+function realmaster() {
+  git checkout master
+  git fetch origin
+  git reset --hard origin/master
+}
 function gdiff2() {
     git diff HEAD^ HEAD
 }
 function grebase() {
+    git fetch
     git pull --rebase origin master
 }
 #- execute any git command with --no-pager so we can pipe the output
@@ -434,7 +474,9 @@ function blameuser() {
         git log --pretty="%H" --author="$1" | while read commit_hash; do git show --oneline --name-only $commit_hash | tail -n+2; done | sort | uniq
     fi
 }
-
+function glbranches() {
+  git for-each-ref --format='%(authorname) %09 %(refname)' | sort -k3n -k4n
+}
 #- Worker function for blamealls
 function blameall() {
     for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do
@@ -452,6 +494,22 @@ function gs() {
     git status
 }
 
+#- merge a branch
+function gmerge() {
+  if [ -z "$1" ]; then
+    echo "You must specify a branch: $(git branch)"
+  else
+    git merge -m "$1" $1
+  fi
+}
+
+function goldbranches() {
+  for x in $(git branch -r | grep -v 'origin/HEAD' | awk '{print $1}' ); do git show --pretty=format:"%ai $x %h %an %s" --no-patch $x; echo; done | sort
+}
+#- Reset last commit
+function grlc() {
+  git reset HEAD^
+}
 #- Convenience method to use git log
 function gln() {
     if [ -z "$1" ]; then
@@ -508,7 +566,7 @@ function gsquash() {
         return 1
     fi
     git reset --soft HEAD~$1 &&
-    git commit -m "${@:2}"
+    git commit -m $2
 }
 function gmakeremote() {
   git fetch orgin
@@ -576,10 +634,18 @@ function gpushc() {
   git push --set-upstream origin $THIS_BANCH
 }
 
+
 function current_branch() {
   git status |head -n 1 | sed 's/.*On branch //'
 }
 
+function gco() {
+  if [ -z "$1" ] ; then 
+    git commit -m $(current_branch)
+  else 
+    git commit -m "$@"
+  fi 
+}
 #- Clone all remote branches
 function gbranches() {
   for x in $(git branch -r |grep -v HEAD |grep -v master | grep origin |awk -F "/" '{print $2}'); do git checkout -b $x origin/$x ; done;
@@ -621,6 +687,10 @@ function aptall() {
 # Misc
 ########################################################################
 #
+function lastcmd() {
+  history | tail -n 2 |head -n 1 | awk '{print $2, $3, $4, $5, $6, $7, $8, $9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20}' | pbcopy
+  #history | tail -n 2 |head -n 1 | awk '{for(i=2; i<NF; i++) print $i, " "}'|pbcopy
+}
 function clr() {
   clear
   reset
@@ -664,7 +734,7 @@ function du2() {
 }
 
 function dudir() {
-  du -sh .[!.]* * | sort -hr | head -n10
+  du -sh .[!.]* * | sort -r | head -n10
 }
 function rawurlencode() {
   local string="${1}"
@@ -884,9 +954,9 @@ function zipdir() {
     #tar -cvzf backup.tgz /home/user/project
     #tar -xvzf backup.tgz
     if [ -z "$1" ]; then
-        echo "dir is required, e.g. zipdir foo/"
+        echo "dir is required, e.g. zipdir foo"
     else
-        zip -r $1.zip $1  
+        zip -e --exclude '*.git*' -r $1.zip $1  
     fi
 }
 
@@ -896,6 +966,19 @@ function curli() {
 }
 function curls() {
     curl -s "$@"
+}
+function pcurl() {
+    port=${1:-80}
+    path=${2:-/}
+    host=${3:-127.0.0.1}
+    if [ -z "$1" ]; then
+      echo "Usage pcurl <port> <path> <host>"
+    else
+      url=$host:$port/$path
+      echo $url
+      curl -i -k -L $url
+    fi
+
 }
 
 #- Curl a local secure port (shorthand for curl https://127.0.0.1:8443)
@@ -1083,11 +1166,9 @@ function check_aws_env() {
     #-
     if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
         echo "Environment variable not set: AWS_SECRET_ACCESS_KEY"
-        exit 1
     fi
     if [ -z "$AWS_ACCESS_KEY_ID" ]; then 
         echo "Environment variable not set: AWS_ACCESS_KEY_ID" 
-        exit 1
     fi
 }
 
@@ -1108,6 +1189,7 @@ function vptest() {
 # 
 alias aupdate='eval "$(curl -s http://dj80hd.github.io/alias.sh)"'
 alias asource='source ~/.bash_profile && source ~/repos/dj80hd.github.io/alias.sh'
+alias avi='vi ~/repos/dj80hd.github.io/alias.sh'
 function apush() {
   D=$PWD
   cd ~/repos/dj80hd.github.io/
@@ -1116,7 +1198,13 @@ function apush() {
   git push origin master
   cd $D
 }
-
+function httpcode() {
+  if [ -z "$1" ]; then
+    echo "url required"
+  else
+    curl -is $1|head -n 1|cut -d' ' -f2
+  fi
+}
 
 function contains() {
 # contains(string, substring)
@@ -1141,12 +1229,16 @@ function contains() {
 #########################################################
 alias copy='cp'
 alias h='history'
+alias t=terraform
 alias ctool='$R/ctool/ctool'
 
 LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############
+# - Default Assign
+# GIGS=${1:-44}
+#
 # - Ensure oS:
 # [[ $(lsb_release -a) =~ "14.04" ]] || { echo "You must run this on ubuntu 14.04" ; exit 1 ; }
 #
@@ -1247,4 +1339,12 @@ LH=http://127.0.0.1
 #__PROGNAME="$(basename $0)"
 #__DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #__ROOT="$(cd "$(dirname "${__DIR}")" && pwd)"
+#
+# If $needle contains =
+#    if echo $needle | grep -F = &>/dev/null
 
+function getk8s() {
+  export KUBERNETES_PROVIDER=vagrant
+  export NUM_MINIONS=2
+  curl -sS https://get.k8s.io |bash
+}
