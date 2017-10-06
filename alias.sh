@@ -10,7 +10,13 @@
 if [ -z "$DOCKER_CMD" ]; then
     DOCKER_CMD="sudo docker "
 fi
-
+function httpcode() {
+  curl -sL -w "%{http_code}\\n" $1 -o /dev/null
+}
+function url_exists() {
+  local respcode=$(curl -ikLs --write-out "%{http_code}\n" --output /dev/null $1)
+  return `expr $respcode - 200`
+}
 
 #TODO
 # - something to save last command to file for reference
@@ -120,7 +126,14 @@ function utestit() {
 #  docker functions
 ########################################################################
 #- cleans up space
-
+function dsize() {
+  if [ -z "$1" ] ; then
+    echo "You must specify a container name"
+    return 
+  fi
+  local id=$(docker inspect -f "{{.Id}}" $1)
+  du -d 2 -h /var/lib/docker/devicemapper | grep $id
+}
 function dcu() {
   docker-compose up
 }
@@ -157,13 +170,15 @@ function dall() {
 }
 
 function drm() {
-  $DOCKER_CMD rm -f $1
+  $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
+  $DOCKER_CMD rm -f $($DOCKER_CMD ps -a -q)
 }
-
+function dps() {
+ $DOCKER_CMD ps
+ }
 #- remove all images
 function drma() {
-    $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
-    $DOCKER_CMD rm -f $($DOCKER_CMD ps -a -q)
+    drm
     $DOCKER_CMD rmi -f $($DOCKER_CMD images -q)
 }
 #- logout
@@ -385,11 +400,17 @@ function andump() {
 #Tag and push it
 function gtag() {
   if [ -z "$1" ]; then
-    echo "USAGE: lastcommitnewbranch newbranchname"
+    echo "USAGE: gtag tag_name"
   else
     git tag $1
     git push origin --tags
   fi
+}
+
+function gmaster() {
+  git checkout master
+  [[ "0" != "$?" ]] && { return ; }
+  git pull origin master
 }
 
 #- Put last commit on new branch
@@ -491,7 +512,7 @@ function blamealls() {
     blameall |perl -e 'while(<>){ print "$1\n" if /\(([\w ]+)\s+20/;}'|sort -n |awk '{$1=$1};1'|uniq -c
 }
 function gs() {
-    git status
+    pwd && git status
 }
 
 #- merge a branch
@@ -544,6 +565,7 @@ function greadme() {
 
 #- Configure my default settings for git
 function gitme() {
+    git config --global core.editor /usr/local/bin/vim
     git config --global user.email "werwath@gmail.com"
     git config --global user.name "Jimi Werwath"           
     git config --global alias.co checkout
@@ -565,8 +587,9 @@ function gsquash() {
         echo "e.g. $0 3 commit message here"
         return 1
     fi
-    git reset --soft HEAD~$1 &&
-    git commit -m $2
+    git reset --soft HEAD~$1
+    local msg="${@:2}"
+    git commit -m "${msg}"
 }
 function gmakeremote() {
   git fetch orgin
@@ -585,6 +608,7 @@ function gapc() {
   git commit -m "${COMMENT}"             
   git push origin $(git rev-parse --abbrev-ref HEAD) 
 }
+# Git force push commit
 function gfpc() {
   if [ ! -z "$1" ]; then
     git add $1
@@ -593,6 +617,9 @@ function gfpc() {
   git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
 }
 
+function gplc() {
+  git pull origin $(git rev-parse --abbrev-ref HEAD)
+}
 function gpc() {
   git push origin $(git rev-parse --abbrev-ref HEAD)
 }
@@ -601,6 +628,7 @@ function cbranch() {
   git rev-parse --abbrev-ref HEAD
 }
 
+# delete remote branch
 function gdrbranch() {
   if [ -z "$1" ]; then
     echo "you must specify a branch match string"
@@ -609,11 +637,12 @@ function gdrbranch() {
     git branch -r | cut -c 10- |grep $1 | xargs git push origin --delete
   fi
 }
+
 #- Delete a branch locally and remotely
 function gdbranch() {
     if [ -z "$1" ]; then
         echo "you must specify a branch name"
-        exit 1
+        return 1
     fi
     git push origin --delete $1
     git branch -D $1
@@ -633,7 +662,6 @@ function gpushc() {
   echo "THIS BRANCH: ${THIS_BRANCH}"
   git push --set-upstream origin $THIS_BANCH
 }
-
 
 function current_branch() {
   git status |head -n 1 | sed 's/.*On branch //'
@@ -714,6 +742,13 @@ function trim() {
 function noquotes() {
   while read a; do 
     echo "$a"| sed -e 's/^\"//' -e 's/\"$//'
+  done
+}
+
+# Remove trailing and leading whitespace
+function nowhitespace() {
+  while read a; do 
+    echo "$a"| awk '{$1=$1};1'
   done
 }
 
@@ -1206,6 +1241,18 @@ function httpcode() {
   fi
 }
 
+function g() {
+  ./gradlew $@
+}
+
+function vix() {
+  chmod +x /var/x
+  vi /var/x
+}
+function x() {
+  chmod +x /var/x
+  /var/x $@
+}
 function contains() {
 # contains(string, substring)
 #
@@ -1235,9 +1282,28 @@ alias ctool='$R/ctool/ctool'
 LH=http://127.0.0.1
 
 
-######### BASH JEMS ###############
+######### BASH JEMS ###############BASHHOLE
+# - Variables in single quotes:
+# foo=bar ; cmd="echo '$foo' \"baz\"" ;  eval $cmd
+#
+# - Addition
+# x=1 ; y=$(($x+1)) ;  echo $y
 # - Default Assign
 # GIGS=${1:-44}
+# WITH_PERL=${WITH_PERL:-no}
+#
+# - stderr/out redirection
+#   >&2 (same as 1>&2) = redirect stdout to stderr
+#  
+# - Checks / conditionals
+#   [[ -n "${FOO}:-}" ]]            # if FOO non empty
+#   [[ -z "${FOO}:-}" ]]            # if FOO empty
+#   if [[ -z "$access" || -z "$secret" ]]; then ...
+
+# 
+# - Variable range
+#   for (( i=1; i<=$DEPLOY_TIMEOUT_MINUTES; i++ )) ; do
+#
 #
 # - Ensure oS:
 # [[ $(lsb_release -a) =~ "14.04" ]] || { echo "You must run this on ubuntu 14.04" ; exit 1 ; }
@@ -1249,6 +1315,8 @@ LH=http://127.0.0.1
 #- get env var names:
 # $ env |awk -F "=" '{print $1}'
 #
+# Convert iso3339 time to seconds:
+# $ gdate -d"2017-09-20T19:31:29.782Z" +%s
 #
 # - See if command exists:
 # if ! type docker >/dev/null ; then { echo "docker must be installed " ; exit 1 ; } fi
