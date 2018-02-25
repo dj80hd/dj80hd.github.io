@@ -2,6 +2,36 @@
 #  80HD Time Saving Aliases
 #  Tip: To see all active functions and aliases use typeset -f and alias
 ########################################################################
+alias f1="awk '{print \$1}'"
+alias f2="awk '{print \$2}'"
+alias f3="awk '{print \$3}'"
+############################# K8S ################################
+function getk8s() {
+  export KUBERNETES_PROVIDER=vagrant
+  export NUM_MINIONS=2
+  curl -sS https://get.k8s.io |bash
+}
+function kcurl() {
+  kubectl run curl --image=radial/busyboxplus:curl -i --tty
+}
+
+function klog() {
+  local pod=$(kubectl get pods | awk '{print $1}' | grep $1 | head -n 1)
+  kubectl logs ${pod}
+}
+
+function kbump() {
+  local f=$1
+  kubectl delete -f ${f}
+  kubectl create -f ${f}
+}
+
+function kpods() {
+  kubectl get pods --no-headers | grep "$1"
+}
+function ksvc() {
+  kubectl get svc | grep "$1"
+}
 
 #
 # To NOT have sudo when using docker do this before sourcing this file:
@@ -10,6 +40,15 @@
 if [ -z "$DOCKER_CMD" ]; then
     DOCKER_CMD="sudo docker "
 fi
+
+function cf() {
+  tr -s ' ' | cut -d ' ' -f $1
+}
+##################### URLS ##################
+function url_ok {
+  curl -siLk $1  2>&1 > /dev/null
+  return $?
+}
 function httpcode() {
   curl -sL -w "%{http_code}\\n" $1 -o /dev/null
 }
@@ -17,6 +56,7 @@ function url_exists() {
   local respcode=$(curl -ikLs --write-out "%{http_code}\n" --output /dev/null $1)
   return `expr $respcode - 200`
 }
+
 
 #TODO
 # - something to save last command to file for reference
@@ -125,6 +165,22 @@ function utestit() {
 ########################################################################
 #  docker functions
 ########################################################################
+function ddump() {
+docker history --no-trunc "$1" | \
+sed -n -e 's,.*/bin/sh -c #(nop) \(MAINTAINER .*[^ ]\) *0 B,\1,p' | \
+head -1
+docker inspect --format='{{range $e := .Config.Env}}
+ENV {{$e}}
+{{end}}{{range $e,$v := .Config.ExposedPorts}}
+EXPOSE {{$e}}
+{{end}}{{range $e,$v := .Config.Volumes}}
+VOLUME {{$e}}
+{{end}}{{with .Config.User}}USER {{.}}{{end}}
+{{with .Config.WorkingDir}}WORKDIR {{.}}{{end}}
+{{with .Config.Entrypoint}}ENTRYPOINT {{json .}}{{end}}
+{{with .Config.Cmd}}CMD {{json .}}{{end}}
+{{with .Config.OnBuild}}ONBUILD {{json .}}{{end}}' "$1"
+}
 #- cleans up space
 function dsize() {
   if [ -z "$1" ] ; then
@@ -396,6 +452,15 @@ function andump() {
 ########################################################################
 #Git Stuff
 ########################################################################
+function gpullall() {
+  for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done
+  git fetch --all
+  git pull --all
+}
+function gpushall() {
+  git push --all
+  git push --tags
+}
 
 #Tag and push it
 function gtag() {
@@ -523,7 +588,14 @@ function gmerge() {
     git merge -m "$1" $1
   fi
 }
-
+function oldbranches() {
+  for b in $(git branch -r | sed 's/origin\///') ; do
+    git checkout $b > /dev/null 2>&1
+    if [ -n "$(git log -1 --before='1 week ago' -s $b)" ]; then
+      echo $b #git branch -D $b
+    fi
+  done
+}
 function goldbranches() {
   for x in $(git branch -r | grep -v 'origin/HEAD' | awk '{print $1}' ); do git show --pretty=format:"%ai $x %h %an %s" --no-patch $x; echo; done | sort
 }
@@ -637,7 +709,15 @@ function gdrbranch() {
     git branch -r | cut -c 10- |grep $1 | xargs git push origin --delete
   fi
 }
-
+#- Delete a tag
+function gdtag() {
+    if [ -z "$1" ]; then
+        echo "you must specify a tag name"
+        return 1
+    fi
+   git push --delete origin $1
+   git tag -d $1
+}
 #- Delete a branch locally and remotely
 function gdbranch() {
     if [ -z "$1" ]; then
@@ -647,6 +727,7 @@ function gdbranch() {
     git push origin --delete $1
     git branch -D $1
 }
+export -f gdbranch 
 
 #- Ammend a commit without changing message
 function gmend() {
@@ -703,6 +784,10 @@ function vhall() {
     done
 }
 
+function vkall() {
+  for i in `vagrant global-status | grep virtualbox | awk '{ print $1 }'` ; do vagrant destroy -f $i ; done
+}
+
 ########################################################################
 # Apt
 ########################################################################
@@ -715,13 +800,33 @@ function aptall() {
 # Misc
 ########################################################################
 #
+# Get Nth field of last command
+function lc() {
+  local re='^[0-9]+$'
+  if ! [[ $1 =~ $re ]] ; then
+    echo "Usage: lc <number>"
+    return 1
+  fi
+  # This does not work :(
+  # echo $(!!) | xargs | tr -s ' ' | cut -d ' ' -f $1
+
+  # Add one because history command's first field is a number
+  n=$(( $1 + 1 ))
+  arg=$(history | tail -n 2 | head -n 1 | tr -s ' ' | xargs | cut -d ' ' -f $n)
+
+  # In case the arg had something like $GOPATH in it.
+  eval "echo ${arg}" 
+}
+
 function lastcmd() {
   history | tail -n 2 |head -n 1 | awk '{print $2, $3, $4, $5, $6, $7, $8, $9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20}' | pbcopy
-  #history | tail -n 2 |head -n 1 | awk '{for(i=2; i<NF; i++) print $i, " "}'|pbcopy
 }
 function clr() {
   clear
   reset
+}
+function myip() {
+  dig +short myip.opendns.com @resolver1.opendns.com
 }
 function tmp() {
   local f="${1:-/tmp/x}"
@@ -729,8 +834,9 @@ function tmp() {
   vi $f
 }
 #- Remove any tailing whitespace in a file
-function notail() {
-  sed -i'' -e 's/[[:blank:]]*$//' $1
+function notrailingspace() {
+  ${1:?"Need to specify ext e.g. java"}
+  find . -name "*.$1" -type f -print0 | xargs -0 sed -i 's/[[:space:]]*$//'
 }
 
 function trim() {
@@ -918,7 +1024,6 @@ function dpop() {
 esac
 }
 
-#- push current dir 
 function dshow(){
     echo "0:$PUSHDIR0"
     echo "1:$PUSHDIR1"
@@ -997,7 +1102,7 @@ function zipdir() {
 
 #- convenience for curl -i -k -L
 function curli() {
-    curl -L -i -k "$@"
+    curl -siLk "$@"
 }
 function curls() {
     curl -s "$@"
@@ -1106,9 +1211,14 @@ function pg() { ps aux |grep $1 | grep -v grep ;}
 
 #- make sure every .sh file in this dir is executable.
 function chx() { 
-    chmod +x *sh 2>&1 >/dev/null || true
-    chmod 600 *pem 2>&1 >/dev/null || true
+    if [[ -z "$1" ]]; then
+      chmod +x *sh 2>&1 >/dev/null || true
+      chmod 600 *pem 2>&1 >/dev/null || true
+    else
+      chmod +x $1
+    fi
 }
+
 function mkcd {
     if [ -z "$1" ]; then
         echo "You must enter a directory to be created."
@@ -1223,8 +1333,13 @@ function vptest() {
 #wget -qO- http://dj80hd.github.io/alias.sh > /tmp/x && source /tmp/x  <-- ANOTHER WAY
 # 
 alias aupdate='eval "$(curl -s http://dj80hd.github.io/alias.sh)"'
-alias asource='source ~/.bash_profile && source ~/repos/dj80hd.github.io/alias.sh'
+alias asource='source ~/.bash_profile && source ~/repos/dj80hd.github.io/alias.sh && source ~/repos/p/uptake.sh'
 alias avi='vi ~/repos/dj80hd.github.io/alias.sh'
+
+yaml2json () {
+        ruby -r yaml -r json -e 'puts YAML.load($stdin.read).to_json'
+}
+
 function apush() {
   D=$PWD
   cd ~/repos/dj80hd.github.io/
@@ -1233,6 +1348,7 @@ function apush() {
   git push origin master
   cd $D
 }
+
 function httpcode() {
   if [ -z "$1" ]; then
     echo "url required"
@@ -1246,13 +1362,15 @@ function g() {
 }
 
 function vix() {
-  chmod +x /var/x
-  vi /var/x
+  chmod +x /tmp/x
+  vi /tmp/x
 }
+
 function x() {
-  chmod +x /var/x
-  /var/x $@
+  chmod +x /tmp/x
+  /tmp/x $@
 }
+
 function contains() {
 # contains(string, substring)
 #
@@ -1281,8 +1399,22 @@ alias ctool='$R/ctool/ctool'
 
 LH=http://127.0.0.1
 
+#########################################################
+# kubernetes
+#########################################################
+function kpod() {
+  kubectl get pods |grep $1 | head -n 1 | awk '{print $1}'      
+}
+
+function kbash() {
+  kubectl exec -it $(kpod $1) -- /bin/bash
+}
+
+
 
 ######### BASH JEMS ###############BASHHOLE
+# - read from either STDIN or param
+# set -- "${1:-$(</dev/stdin)}" "${@:2}"
 # - Variables in single quotes:
 # foo=bar ; cmd="echo '$foo' \"baz\"" ;  eval $cmd
 #
@@ -1291,6 +1423,7 @@ LH=http://127.0.0.1
 # - Default Assign
 # GIGS=${1:-44}
 # WITH_PERL=${WITH_PERL:-no}
+#: ${AWS_SSH_KEY:?"Need to set AWS_SSH_KEY"}
 #
 # - stderr/out redirection
 #   >&2 (same as 1>&2) = redirect stdout to stderr
@@ -1299,7 +1432,16 @@ LH=http://127.0.0.1
 #   [[ -n "${FOO}:-}" ]]            # if FOO non empty
 #   [[ -z "${FOO}:-}" ]]            # if FOO empty
 #   if [[ -z "$access" || -z "$secret" ]]; then ...
-
+# 
+# Prompt User:
+#
+# PS3='Select the tag you wish to rollback to: '
+# select opt in "${OPTS_ARRAY[@]}" "Quit"; do
+#   case $REPLOY in 
+#   
+# Parse strings to arrays:
+# a=($(echo "A B C" | tr ' ' '\n'))
+# for i in "${a[@]}"; do echo $i ; done 
 # 
 # - Variable range
 #   for (( i=1; i<=$DEPLOY_TIMEOUT_MINUTES; i++ )) ; do
@@ -1410,9 +1552,3 @@ LH=http://127.0.0.1
 #
 # If $needle contains =
 #    if echo $needle | grep -F = &>/dev/null
-
-function getk8s() {
-  export KUBERNETES_PROVIDER=vagrant
-  export NUM_MINIONS=2
-  curl -sS https://get.k8s.io |bash
-}
