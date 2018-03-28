@@ -5,19 +5,35 @@
 alias f1="awk '{print \$1}'"
 alias f2="awk '{print \$2}'"
 alias f3="awk '{print \$3}'"
+############################# GOLANG ################################
+alias gf="go fmt ./..."
 ############################# K8S ################################
+function kbash() {
+  local pod=$(kubectl get pods | awk '{print $1}' | grep $1 | head -n 1)
+  kubectl exec -it ${pod} -- /bin/bash
+}
+
+function kclean() {
+kubectl delete pod $(kubectl get pods | awk '$3 == "CrashLoopBackOff" {print $1}') 
+}
+
+function ks() {
+  kubectl get pods
+}
 function getk8s() {
   export KUBERNETES_PROVIDER=vagrant
   export NUM_MINIONS=2
   curl -sS https://get.k8s.io |bash
 }
-function kcurl() {
-  kubectl run curl --image=radial/busyboxplus:curl -i --tty
-}
 
 function klog() {
   local pod=$(kubectl get pods | awk '{print $1}' | grep $1 | head -n 1)
   kubectl logs ${pod}
+}
+
+function kpod() {
+  local pod=$(kubectl get pods | awk '{print $1}' | grep $1 | head -n 1)
+  kubectl describe pod ${pod}
 }
 
 function kbump() {
@@ -43,6 +59,12 @@ fi
 
 function cf() {
   tr -s ' ' | cut -d ' ' -f $1
+}
+
+# f X Y : get the Xth whitespace separated field from the Yth line
+function f() {
+  local line=${2:-1}
+  awk "{print \$${1}}" | sed "${line}q;d"
 }
 ##################### URLS ##################
 function url_ok {
@@ -818,6 +840,22 @@ function lc() {
   eval "echo ${arg}" 
 }
 
+function c1() {
+  history | tail -n 2 | head -n 1 | awk '{print $2}'
+}
+
+function c2() {
+  history | tail -n 2 | head -n 1 | awk '{print $3}'
+}
+
+function c3() {
+  history | tail -n 2 | head -n 1 | awk '{print $4}'
+}
+
+function c4() {
+  history | tail -n 2 | head -n 1 | awk '{print $5}'
+}
+
 function lastcmd() {
   history | tail -n 2 |head -n 1 | awk '{print $2, $3, $4, $5, $6, $7, $8, $9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20}' | pbcopy
 }
@@ -1266,11 +1304,11 @@ function activate() {
 function ENV() {
     #FIXME - check for deactivate function and call if it exists
     rm -fr ENV
-    python2.7 -m virtualenv ENV 
+    python3 -m virtualenv ENV 
     source ENV/bin/activate
-    pip install -r requirements.txt
+    pip3 install -r requirements.txt
     if [ -f test-requirements.txt ]; then
-        pip install -r test-requirements.txt
+        pip3 install -r test-requirements.txt
     fi
 }
 function deact() {
@@ -1370,6 +1408,7 @@ function x() {
   chmod +x /tmp/x
   /tmp/x $@
 }
+alias cx="chmod +x"
 
 function contains() {
 # contains(string, substring)
@@ -1399,24 +1438,16 @@ alias ctool='$R/ctool/ctool'
 
 LH=http://127.0.0.1
 
-#########################################################
-# kubernetes
-#########################################################
-function kpod() {
-  kubectl get pods |grep $1 | head -n 1 | awk '{print $1}'      
-}
-
-function kbash() {
-  kubectl exec -it $(kpod $1) -- /bin/bash
-}
 
 
 
 ######### BASH JEMS ###############BASHHOLE
 # - read from either STDIN or param
 # set -- "${1:-$(</dev/stdin)}" "${@:2}"
+#
 # - Variables in single quotes:
 # foo=bar ; cmd="echo '$foo' \"baz\"" ;  eval $cmd
+# key=memory ; cmd="echo '{\"$key\": 669 }' | jq ." ; eval $cmd
 #
 # - Addition
 # x=1 ; y=$(($x+1)) ;  echo $y
