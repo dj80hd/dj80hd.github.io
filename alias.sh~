@@ -1267,7 +1267,6 @@ function chx() {
     if [[ -z "$1" ]]; then
       chmod +x *sh 2>&1 >/dev/null || true
       chmod 600 *pem 2>&1 >/dev/null || true
-      chmod 600 x 2>&1 >/dev/null || true
     else
       chmod +x $1
     fi
