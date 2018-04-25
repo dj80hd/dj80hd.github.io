@@ -8,17 +8,23 @@ alias f3="awk '{print \$3}'"
 ############################# GOLANG ################################
 alias gf="go fmt ./..."
 ############################# K8S ################################
+function kcontext() {
+  kubectl config use-context $1
+}
+
+# run a bash shell in a given pod substring
 function kbash() {
   local pod=$(kubectl get pods | awk '{print $1}' | grep $1 | head -n 1)
   kubectl exec -it ${pod} -- /bin/bash
 }
 
+# remove all CrashLoopBackOff
 function kclean() {
 kubectl delete pod $(kubectl get pods | awk '$3 == "CrashLoopBackOff" {print $1}') 
 }
 
 function ks() {
-  kubectl get pods
+  kubectl get pods $@
 }
 function getk8s() {
   export KUBERNETES_PROVIDER=vagrant
@@ -32,17 +38,19 @@ function _kpod() {
 
 function klog() {
   local pod=$(_kpod $1)
-  kubectl logs ${pod} $2
+  shift
+  kubectl logs ${pod} $@
 }
 
 function kpod() {
   local pod=$(_kpod $1)
-  echo "POD:$pod"
-  kubectl describe pod ${pod}
+  shift
+  kubectl describe pod ${pod} $@
 }
 
 function kdel() {
   local pod=$(_kpod $1)
+  shift
   kubectl delete pod ${pod}
 }
 
@@ -487,8 +495,11 @@ function andump() {
 
 
 ########################################################################
-#Git Stuff
+# GIT Stuff
 ########################################################################
+function glog() {
+  git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+}
 function gpullall() {
   for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done
   git fetch --all
@@ -550,22 +561,27 @@ function gjenkins() {
   git commit --amend --no-edit && \
   git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
 }
-function gajenkins() {
-  git add Jenkinsfile && \
-  git commit -m Jenkinsfile && \
-  git push origin $(git rev-parse --abbrev-ref HEAD)
-}
+
 #-Recusively remove all git info from a dir
 function gremove() {
     #- FIXME: do an exact match for git dir ?
     find . | grep .git | xargs rm -rf
 }
+
 function gsize() {
   git count-objects -vH
 }
+
 function gpom() {
     git pull origin master
 }
+
+function gmore() {
+  git add .
+  git commit -m more
+  git push origin $(git rev-parse --abbrev-ref HEAD)
+}
+
 function realmaster() {
   git checkout master
   git fetch origin
@@ -1458,6 +1474,11 @@ LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############BASHHOLE
+# - init a hash
+# declare -A regions=(
+#   [sa-east-1]="South America (Sao Paulo)"
+#   [us-east-1]="US East (N. Virginia)"
+# )
 # - read from either STDIN or param
 # set -- "${1:-$(</dev/stdin)}" "${@:2}"
 #
@@ -1467,6 +1488,7 @@ LH=http://127.0.0.1
 #
 # - Addition
 # x=1 ; y=$(($x+1)) ;  echo $y
+#
 # - Default Assign
 # GIGS=${1:-44}
 # WITH_PERL=${WITH_PERL:-no}
@@ -1480,13 +1502,13 @@ LH=http://127.0.0.1
 #   [[ -z "${FOO}:-}" ]]            # if FOO empty
 #   if [[ -z "$access" || -z "$secret" ]]; then ...
 # 
-# Prompt User:
+# - Prompt User:
 #
 # PS3='Select the tag you wish to rollback to: '
 # select opt in "${OPTS_ARRAY[@]}" "Quit"; do
 #   case $REPLOY in 
 #   
-# Parse strings to arrays:
+# - Parse strings to arrays:
 # a=($(echo "A B C" | tr ' ' '\n'))
 # for i in "${a[@]}"; do echo $i ; done 
 # 
@@ -1500,10 +1522,6 @@ LH=http://127.0.0.1
 #- Remove lead and trail double quotes 
 # ' | sed -e 's/^\"//' -e 's/\"$//'"
 
-#- Getting part of line
-#- get env var names:
-# $ env |awk -F "=" '{print $1}'
-#
 # Convert iso3339 time to seconds:
 # $ gdate -d"2017-09-20T19:31:29.782Z" +%s
 #
@@ -1533,8 +1551,8 @@ LH=http://127.0.0.1
 # exec 6<&- # close input connection
 #
 #- One line ifs
-#- if [ $RANDOM -lt 10000  ]; then echo ONE ; else echo TWO ; fi;
-#- [ -n "$HTTPS_PORT" ] && PARAMS="$PARAMS --httpsPort=$HTTPS_PORT"
+#  if [ $RANDOM -lt 10000  ]; then echo ONE ; else echo TWO ; fi;
+#  [ -n "$HTTPS_PORT" ] && PARAMS="$PARAMS --httpsPort=$HTTPS_PORT"
 #
 # - One line error exits
 # test "0" = "$?" || { echo "ERROR: Copy error [2]" ; exit $?; }
@@ -1542,13 +1560,6 @@ LH=http://127.0.0.1
 #[ ! -z "${BITBUCKET_PASSWORD}" ]  ||  { echo "no password!" ; exit 1;}
 #[ ! -z "${BITBUCKET_USERNAME}" ]  ||  { echo "no username!" ; exit 1;}
 # 
-
-## Set magic variables for current file & dir
-#__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-#__file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
-#__base="$(basename ${__file} .sh)"
-#__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this as it depends on your app
-
 #- PROMPT
 #while true; do
 #    read -p "Do you wish to install this program?" yn
@@ -1558,6 +1569,15 @@ LH=http://127.0.0.1
 #        * ) echo "Please answer yes or no.";;
 #    esac
 #done
+#
+# - Slice $@
+#
+# - Colored outpu
+#  echo_red() { tput setaf 1; echo $@; tput sgr0; }
+#  echo_green() { tput setaf 2; echo $@; tput sgr0; }
+#  echo_orange() { tput setaf 3; echo $@; tput sgr0; }
+#
+#
 #arg1="${1:-}"
 # - Default values
 # ZK_HOST=${ZK_HOST:-dockerhost}
@@ -1599,3 +1619,4 @@ LH=http://127.0.0.1
 #
 # If $needle contains =
 #    if echo $needle | grep -F = &>/dev/null
+#
