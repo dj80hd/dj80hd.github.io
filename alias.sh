@@ -2,19 +2,24 @@
 #  80HD Time Saving Aliases
 #  Tip: To see all active functions and aliases use typeset -f and alias
 ########################################################################
+# Tools i should learn:
+# strace, tcpdump, grep, tshark, ss, socat lsof pgrep 
+#
 alias f1="awk '{print \$1}'"
 alias f2="awk '{print \$2}'"
 alias f3="awk '{print \$3}'"
 ############################# GOLANG ################################
 alias gf="go fmt ./..."
 ############################# K8S ################################
-function kcontext() {
-  kubectl config use-context $1
-}
+export KS="--namespace=kube-system"
 
+function kctx() {
+  kubectx $1
+}
 # run a bash shell in a given pod substring
 function kbash() {
-  local pod=$(kubectl get pods | awk '{print $1}' | grep $1 | head -n 1)
+  local substring=$1; shift
+  local pod=$(kubectl get pods $@ | awk '{print $1}' | grep $substring | head -n 1)
   kubectl exec -it ${pod} -- /bin/bash
 }
 
@@ -33,15 +38,29 @@ function getk8s() {
 }
 
 function _kpod() {
-  kubectl get pods | grep $1 | awk '{print $1}' | head -n 1
+  local substring=$1
+  shift
+  if [ -n $substring ]; then 
+  kubectl get pods $@ | grep $substring | awk '{print $1}' | head -n 1
+  else
+  echo
+  fi
+}
+
+# get last termination message of a pod substring
+function kterm() {
+  local substring=$1; shift
+  local pod=$(_kpod $substring $@)
+  shift
+  [[ -n $pod ]] && kubectl get pod ${pod} -o go-template="{{range .status.containerStatuses}}{{.lastState.terminated.message}}{{end}}" $@
 }
 
 function klog() {
-  local pod=$(_kpod $1)
+  local substring=$1
   shift
-  kubectl logs ${pod} $@
+  local pod=$(_kpod $substring $@)
+  [[ -n $pod ]] && kubectl logs ${pod} $@
 }
-
 function kpod() {
   local pod=$(_kpod $1)
   shift
@@ -52,6 +71,11 @@ function kdel() {
   local pod=$(_kpod $1)
   shift
   kubectl delete pod ${pod}
+}
+
+function krm() {
+  kubectl delete service $@
+  kubectl delete deployment $@
 }
 
 function knode() {
@@ -71,7 +95,11 @@ function kbump() {
 function ksvc() {
   kubectl get svc | grep "$1"
 }
+function kweave() {
 
+
+kubectl port-forward -n weave "$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')" 4040 && open http:/localhost:4040
+}
 #
 # To NOT have sudo when using docker do this before sourcing this file:
 # export DOCKER_CMD=docker
@@ -577,8 +605,9 @@ function gpom() {
 }
 
 function gmore() {
+  local comment="${@:-more}"
   git add .
-  git commit -m more
+  git commit -m "${comment}"
   git push origin $(git rev-parse --abbrev-ref HEAD)
 }
 
@@ -1174,7 +1203,7 @@ function curli() {
     curl -siLk "$@"
 }
 function curls() {
-    curl -s "$@"
+    curl -iLks "$@"
 }
 function pcurl() {
     port=${1:-80}
@@ -1474,6 +1503,9 @@ LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############BASHHOLE
+# - recursive string replacement
+# find . -type f -name "*.yml" -exec gsed -i 's/ccccc/c/g' {} \;
+# $ find . -type f -name "*.yml" -print0 | xargs -0 sed -i '' -e 's/  namespace: default/  namespace: core/g'
 # - init a hash
 # declare -A regions=(
 #   [sa-east-1]="South America (Sao Paulo)"
