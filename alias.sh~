@@ -1524,9 +1524,6 @@ LH=http://127.0.0.1
 # find . -type f -name "*.yml" -exec gsed -i 's/ccccc/c/g' {} \;
 # $ find . -type f -name "*.yml" -print0 | xargs -0 sed -i '' -e 's/  namespace: default/  namespace: core/g'
 #
-# - recursive string replacement
-# find . -type f -print0 | xargs sed -i '' /nodePort/d
-#
 # - init a hash
 # declare -A regions=(
 #   [sa-east-1]="South America (Sao Paulo)"
