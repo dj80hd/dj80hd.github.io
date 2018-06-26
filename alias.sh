@@ -28,14 +28,21 @@ function kbash() {
 # remove all CrashLoopBackOff
 function kclean() {
   kubectl delete pod $(kubectl get pods | awk '$3 == "CrashLoopBackOff" {print $1}') 
+  kubectl delete pod $(kubectl get pods | awk '$3 == "Unknown" {print $1}') 
 }
 
 function kd() {
   kubectl describe $@ 
 }
+
+function ka() {
+  kubectl apply -f $@
+}
+
 function kg() {
   kubectl get $@ 
 }
+
 function kgy() {
   kubectl get $@ -o yaml
 }
@@ -43,6 +50,11 @@ function kgy() {
 function ks() {
   kubectl get pods $@
 }
+
+function ksl() {
+  kubectl get pods --show-labels $@
+}
+
 
 function kss() {
   kubectl get pods --all-namespaces $@
@@ -1520,6 +1532,9 @@ LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############BASHHOLE
+# - checking against regex:
+# if (echo foo-bar2 |egrep -q '\w+-\w' ); then...
+#
 # - recursive string replacement
 # find . -type f -name "*.yml" -exec gsed -i 's/ccccc/c/g' {} \;
 # $ find . -type f -name "*.yml" -print0 | xargs -0 sed -i '' -e 's/  namespace: default/  namespace: core/g'
