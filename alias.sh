@@ -15,8 +15,43 @@ export KS="--namespace=kube-system"
 export KC="--namespace=core"
 export KN="--namespace=spinnaker"
 
+alias getdig='curl -L https://github.com/sequenceiq/docker-alpine-dig/releases/download/v9.10.2/dig.tgz|tar -xzv -C /usr/local/bin/'
+function kdocs() {
+  k8s_website_dir=$R/website
+
+  if [[ ! -d $k8s_website_dir ]]; then
+    cd $R
+    git clone git@github.com:kubernetes/website.git
+  else
+    echo "exists:" $k8s_website_dir
+  fi
+  cd $k8s_website_dir
+
+
+  docker build .  --tag kubernetes-hugo --build-arg HUGO_VERSION=0.40.3
+  docker run --rm -it -v $(PWD):/src kubernetes-hugo:latest hugo
+
+  cd $k8s_website_dir/public
+
+  python -m SimpleHTTPServer &
+
+  sleep 2 && open http://localhost:8000
+}
+
 function kctx() {
   kubectx $1
+}
+
+function kkill() {
+  kubectl delete service $@ || true
+  kubectl delete deployment $@ || true
+  kubectl delete ingress $@ || true
+  kubectl delete serviceaccount $@ || true
+  kubectl delete rollbinding $@ || true
+}
+
+function kb() {
+  kustomize build ${1:-.}
 }
 # run a bash shell in a given pod substring
 function kbash() {
@@ -26,13 +61,23 @@ function kbash() {
 }
 
 # remove all CrashLoopBackOff
-function kclean() {
-  kubectl delete pod $(kubectl get pods | awk '$3 == "CrashLoopBackOff" {print $1}') 
-  kubectl delete pod $(kubectl get pods | awk '$3 == "Unknown" {print $1}') 
+function kclean() { 
+  if [[ -z "$1" ]]; then
+    kubectl delete pod $(kubectl get pods | awk '$3 == "CrashLoopBackOff" {print $1}') 
+    kubectl delete pod $(kubectl get pods | awk '$3 == "Unknown" {print $1}') 
+  else
+    kubectl get svc -n $1 --no-headers | awk '{print $1}' | xargs -n 1 kubectl delete svc -n $1
+    kubectl get deployment -n $1 --no-headers | awk '{print $1}' | xargs -n 1 kubectl delete deployment -n $1
+  fi
 }
 
 function kd() {
   kubectl describe $@ 
+}
+
+# Get vault init container logs
+kvault() {
+  k get pods ${@:2}  | grep $1 | grep Init | awk '{print $1}' | xargs kubectl logs -c vault-pod-init ${@:2}
 }
 
 function ka() {
@@ -56,6 +101,10 @@ function ksl() {
 }
 
 
+function ksn() {
+  kubectl get pods -n core $@
+}
+
 function kss() {
   kubectl get pods --all-namespaces $@
 }
@@ -65,12 +114,22 @@ function getk8s() {
   export NUM_MINIONS=2
   curl -sS https://get.k8s.io |bash
 }
+function kpods() {
+  kubectl get pods --all-namespaces | grep "$1" | grep "$2"
+}
+function kpods2() {
+kubectl get pods --all-namespaces -o=jsonpath='{range .items[*]}{"\n"}{.metadata.namespace}{","}{.metadata.name}{","}{.spec.containers[*].image}{","}{.status.hostIP}{","}{.status.phase}{","}{.status.containerStatuses[*].ready}{","}{.status.containerStatuses[*].restartCount}{","}{.status.containerStatuses[*].state.running.startedAt}{","}{end}' | sed '/^$/d' | sed 's/ /_/g'
+}
+
+kgpod() {
+  kubectl get pods --all-namespaces | grep "$1" | grep Running | awk '{print $2, "-n", $1}' | xargs kubectl get pod -o json
+}
 
 function _kpod() {
   local substring=$1
   shift
   if [ -n $substring ]; then 
-  kubectl get pods $@ | grep $substring | awk '{print $1}' | head -n 1
+  kubectl get pods --all-namespaces $@ | grep $substring | awk '{print $2}' | head -n 1
   else
   echo
   fi
@@ -84,6 +143,9 @@ function kterm() {
   [[ -n $pod ]] && kubectl get pod ${pod} -o go-template="{{range .status.containerStatuses}}{{.lastState.terminated.message}}{{end}}" $@
 }
 
+function certinfo() {
+cfssl certinfo -domain $1
+}
 function klog() {
   local substring=$1
   shift
@@ -105,6 +167,8 @@ function kdel() {
 function krm() {
   kubectl delete service $@
   kubectl delete deployment $@
+  kubectl delete ingress $@
+  kubectl delete serviceaccount $@
 }
 
 function knode() {
@@ -159,6 +223,14 @@ function url_exists() {
   return `expr $respcode - 200`
 }
 
+function rr() {
+  find . -type f -name '*.yaml' -exec sed -i '' s/$1/$2/ {} +
+}
+
+function rwhitespace() {
+#find . -type f -exec grep -Il "" {} \; 
+find . -type f -print0 | xargs -0 perl -pi -e 's/ +$//'
+}
 
 #TODO
 # - something to save last command to file for reference
@@ -619,6 +691,10 @@ function gjenkins() {
   git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
 }
 
+function jankins() {
+  git add Jenkinsfile && git commit -m Jankins && git push origin master      
+}
+
 #-Recusively remove all git info from a dir
 function gremove() {
     #- FIXME: do an exact match for git dir ?
@@ -633,9 +709,14 @@ function gpom() {
     git pull origin master
 }
 
-function gmore() {
+function gcm() {
   local comment="${@:-more}"
+  git commit -m "${comment}"
+}
+
+function gmore() {
   git add .
+  local comment="${@:-more}"
   git commit -m "${comment}"
   git push origin $(git rev-parse --abbrev-ref HEAD)
 }
@@ -749,13 +830,17 @@ function greadme() {
 #- Configure my default settings for git
 function gitme() {
     git config --global core.editor /usr/local/bin/vim
-    git config --global user.email "werwath@gmail.com"
+    git config --global user.email "jim.werwath@uptake.com"
     git config --global user.name "Jimi Werwath"           
     git config --global alias.co checkout
     git config --global alias.br branch
     git config --global alias.ci commit
     git config branch.master.rebase true
     git config --global core.editor vi
+    git config --global core.excludesfile ~/.gitignore_global
+    touch ~/.gitignore_global
+    echo '*~' >> ~/.gitignore_global
+    echo '.*~' >> ~/.gitignore_global
 }
 
 #- Squash last n local commits:
@@ -1532,6 +1617,11 @@ LH=http://127.0.0.1
 
 
 ######### BASH JEMS ###############BASHHOLE
+# -- backups
+# rm repos.zip || true
+# zip --encrypt -r repos.zip go/src/github.com/dj80hd go/src/git.uptake.com repos -x *.git*
+# unzip -p password repos.zip
+#
 # - checking against regex:
 # if (echo foo-bar2 |egrep -q '\w+-\w' ); then...
 #
@@ -1540,6 +1630,9 @@ LH=http://127.0.0.1
 # $ find . -type f -name "*.yml" -print0 | xargs -0 sed -i '' -e 's/  namespace: default/  namespace: core/g'
 #
 # - recursive string replacement
+# find . -type f -print0 | xargs sed -i '' s/foo/bar/ DOES NOT WORK 
+
+# - recursive line deletion
 # find . -type f -print0 | xargs sed -i '' /nodePort/d
 #
 # - init a hash
@@ -1547,8 +1640,14 @@ LH=http://127.0.0.1
 #   [sa-east-1]="South America (Sao Paulo)"
 #   [us-east-1]="US East (N. Virginia)"
 # )
+ 
 # - read from either STDIN or param
 # set -- "${1:-$(</dev/stdin)}" "${@:2}"
+ 
+# - read a char
+#  echo -n "Press any key to continue..."
+#  read -rsn 1
+#  echo ''
 #
 # - Variables in single quotes:
 # foo=bar ; cmd="echo '$foo' \"baz\"" ;  eval $cmd
@@ -1569,7 +1668,16 @@ LH=http://127.0.0.1
 #   [[ -n "${FOO}:-}" ]]            # if FOO non empty
 #   [[ -z "${FOO}:-}" ]]            # if FOO empty
 #   if [[ -z "$access" || -z "$secret" ]]; then ...
-# 
+#   if [[ -z "${1:-}" ]] || [[ -z ${2:-} ]] || [[ -z ${3:-} ]]; then
+#     echo "Usage: $(basename $0) ISLAND CLUSTER MANIFEST"
+#     exit 1
+#
+# - GNU sed
+# if [[ "$(uname)" = "Darwin" ]] && [[ -z "$(which gsed)" ]]; then
+#   echo "This script requires GNU sed - please 'brew install gnu-sed' and try again"
+#   exit 1
+# fi
+ 
 # - Prompt User:
 #
 # PS3='Select the tag you wish to rollback to: '
@@ -1593,22 +1701,25 @@ LH=http://127.0.0.1
 # $ gdate -d"2017-09-20T19:31:29.782Z" +%s
 #
 # - See if command exists:
+#if [[ -z $(which kustomize) ]]; then
+#  echo 'Kustomize is required to use this script.'
+#  echo 'https://github.com/kubernetes-sigs/kustomize/blob/master/INSTALL.md'
+#  exit 1
 # if ! type docker >/dev/null ; then { echo "docker must be installed " ; exit 1 ; } fi
 # BEST WAY:
 # foo >/dev/null 2>&1
 # test "0" = "$?" || error_exit "BAD COMMAND foo" 
+# [ -x "$(command -v docker)" ] || { echo "docker must be installed " ; exit 1 ; }
+# command -v foo >/dev/null 2>&1 || { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
 #
 # - Current dir of script
-#DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+#THISDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 #
 # - Here Doc:
 #cat << EOF > /tmp/yourfilehere
 #These contents will be written to the file.
 #        This line is indented.
 #EOF
-# - Check for program
-# [ -x "$(command -v docker)" ] || { echo "docker must be installed " ; exit 1 ; }
-# command -v foo >/dev/null 2>&1 || { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
 # - Grep command output (without grep)
 # [[ $(/usr/local/bin/monit --version) != *5.5* ]]
 #[[ $CORE_UI_TEST == *"$NEEDLE"* ]] && CORE_UI_STATUS="OK"
@@ -1643,6 +1754,9 @@ LH=http://127.0.0.1
 #  echo_red() { tput setaf 1; echo $@; tput sgr0; }
 #  echo_green() { tput setaf 2; echo $@; tput sgr0; }
 #  echo_orange() { tput setaf 3; echo $@; tput sgr0; }
+
+# - start_with?A
+#   [[ $a == z* ]] 
 #
 #
 #arg1="${1:-}"
@@ -1654,22 +1768,24 @@ LH=http://127.0.0.1
 # [[ $(/usr/local/bin/monit --version) =~ "5.5" ]] || echo "NOT OK"#
 # 
 # - Script Parms:
-#while [[ $# > 1 ]]; do
+#while [[ $# -gt 0 ]]; do
 #    key="$1"
 #    case $key in
-#        -a|--action)
-#        ACTION="$2"
-#        shift # past argument
+#        -f|--filename)
+#        FILENAME="$2"
+#        TMPDIR="/tmp/manicop-deploy"
+#        rm -fr ${TMPDIR} && mkdir -p ${TMPDIR}
+#        shift # past value
 #        ;;
-#        -d|--directory)
-#        AUTOTEST_DIR="$2"
-#        shift # past argument
+#        -k|--kubeconfigy)
+#        KUBECONFIG="$2"
+#        shift # past value
 #        ;;
-#        --default)
-#        DEFAULT=YES
+#        -d|--dryrun)
+#        DRYRUN=YES
 #        ;;
 #        *)
-#            # unknown option
+#        usage
 #        ;;
 #    esac
 #    shift # past argument or value
