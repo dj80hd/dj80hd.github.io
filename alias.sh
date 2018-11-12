@@ -98,21 +98,10 @@ function ks() {
 
 function ksl() {
   kubectl get pods --show-labels $@
-}
+ }
 
-
-function ksn() {
-  kubectl get pods -n core $@
-}
-
-function kss() {
-  kubectl get pods --all-namespaces $@
-}
-
-function getk8s() {
-  export KUBERNETES_PROVIDER=vagrant
-  export NUM_MINIONS=2
-  curl -sS https://get.k8s.io |bash
+function kstuck() {
+kubectl get deployment --all-namespaces | awk '{if ($3!=$4 || $3!=$5 || $3!=$4 || $4!=$5 || $4!=$6 || $5!=$6) {print $0}}'
 }
 function kpods() {
   kubectl get pods --all-namespaces | grep "$1" | grep "$2"
@@ -145,6 +134,14 @@ function kterm() {
 
 function certinfo() {
 cfssl certinfo -domain $1
+}
+
+function showcert() {
+openssl s_client -connect $1:443 -showcerts </dev/null 2>/dev/null |openssl x509 -outform PEM
+}
+
+function klogs() {
+kubectl get pod --all-namespaces | grep $1 | tail -n 1 | awk '{system("kubectl logs -n "$1" "$2)}' 
 }
 function klog() {
   local substring=$1
@@ -285,11 +282,11 @@ function gradle() {
     fi
 }
 function gb() {
-    gradle build
+    go build #gradle build
 }
 
 function gt() {
-    gradle test
+    go test ./... #gradle test
 }
 
 function gw() {
@@ -1425,6 +1422,7 @@ function pg() { ps aux |grep $1 | grep -v grep ;}
 function chx() { 
     if [[ -z "$1" ]]; then
       chmod +x *sh 2>&1 >/dev/null || true
+      chmod +x x 2>&1 >/dev/null || true
       chmod 600 *pem 2>&1 >/dev/null || true
       chmod 600 x 2>&1 >/dev/null || true
     else
@@ -1479,7 +1477,7 @@ function activate() {
 function ENV() {
     #FIXME - check for deactivate function and call if it exists
     rm -fr ENV
-    python3 -m virtualenv ENV 
+    python3 -m venv ENV
     source ENV/bin/activate
     pip3 install -r requirements.txt
     if [ -f test-requirements.txt ]; then
@@ -1624,6 +1622,9 @@ LH=http://127.0.0.1
 #
 # - checking against regex:
 # if (echo foo-bar2 |egrep -q '\w+-\w' ); then...
+#
+# - recursive file extention change:
+# find . -name "*.yml" -exec bash -c 'mv "$1" "${1%.yml}".yaml' - '{}' \;
 #
 # - recursive string replacement
 # find . -type f -name "*.yml" -exec gsed -i 's/ccccc/c/g' {} \;
