@@ -10,36 +10,62 @@ alias f2="awk '{print \$2}'"
 alias f3="awk '{print \$3}'"
 ############################# GOLANG ################################
 alias gf="go fmt ./..."
-############################# K8S ################################
-export KS="--namespace=kube-system"
-export KC="--namespace=core"
-export KN="--namespace=spinnaker"
 
 alias getdig='curl -L https://github.com/sequenceiq/docker-alpine-dig/releases/download/v9.10.2/dig.tgz|tar -xzv -C /usr/local/bin/'
-function kdocs() {
-  k8s_website_dir=$R/website
-
-  if [[ ! -d $k8s_website_dir ]]; then
-    cd $R
-    git clone git@github.com:kubernetes/website.git
-  else
-    echo "exists:" $k8s_website_dir
-  fi
-  cd $k8s_website_dir
 
 
-  docker build .  --tag kubernetes-hugo --build-arg HUGO_VERSION=0.40.3
-  docker run --rm -it -v $(PWD):/src kubernetes-hugo:latest hugo
-
-  cd $k8s_website_dir/public
-
-  python -m SimpleHTTPServer &
-
-  sleep 2 && open http://localhost:8000
-}
-
+##########################--- K8S ---#############################
 function kctx() {
   kubectx $1
+}
+
+function klog() {
+  local substring=$1
+  shift
+  local pod=$(_kpod $substring $@)
+  [[ -n $pod ]] && kubectl logs ${pod} $@
+}
+
+function kpod() {
+  local pod=$(_kpod $1)
+  shift
+  kubectl describe pod ${pod} $@
+}
+
+function kdel() {
+  local pod=$(_kpod $1)
+  shift
+  kubectl delete pod ${pod}
+}
+
+function krm() {
+  kubectl delete service $@
+  kubectl delete deployment $@
+  kubectl delete ingress $@
+  kubectl delete serviceaccount $@
+}
+
+function knode() {
+  kubectl get nodes --no-headers | grep Ready | head -n 1 | awk '{print $1}'
+}
+
+
+function kexe() {
+  kubectl exec -it $(_kpod $1) bash
+}
+
+function kbump() {
+  local f=$1
+  kubectl delete -f ${f}
+  kubectl create -f ${f}
+}
+
+function ksvc() {
+  kubectl get svc | grep "$1"
+}
+
+function kweave() {
+  kubectl port-forward -n weave "$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')" 4040 && open http:/localhost:4040
 }
 
 function kkill() {
@@ -53,6 +79,7 @@ function kkill() {
 function kb() {
   kustomize build ${1:-.}
 }
+
 # run a bash shell in a given pod substring
 function kbash() {
   local substring=$1; shift
@@ -61,7 +88,7 @@ function kbash() {
 }
 
 # remove all CrashLoopBackOff
-function kclean() { 
+function kclean() {
   if [[ -z "$1" ]]; then
     kubectl delete pod $(kubectl get pods | awk '$3 == "CrashLoopBackOff" {print $1}') 
     kubectl delete pod $(kubectl get pods | awk '$3 == "Unknown" {print $1}') 
@@ -100,27 +127,31 @@ function ksl() {
   kubectl get pods --show-labels $@
  }
 
+# Get stuck deployments
 function kstuck() {
-kubectl get deployment --all-namespaces | awk '{if ($3!=$4 || $3!=$5 || $3!=$4 || $4!=$5 || $4!=$6 || $5!=$6) {print $0}}'
+  kubectl get deployment --all-namespaces | awk '{if ($3!=$4 || $3!=$5 || $3!=$4 || $4!=$5 || $4!=$6 || $5!=$6) {print $0}}'
 }
+
 function kpods() {
   kubectl get pods --all-namespaces | grep "$1" | grep "$2"
 }
+
 function kpods2() {
-kubectl get pods --all-namespaces -o=jsonpath='{range .items[*]}{"\n"}{.metadata.namespace}{","}{.metadata.name}{","}{.spec.containers[*].image}{","}{.status.hostIP}{","}{.status.phase}{","}{.status.containerStatuses[*].ready}{","}{.status.containerStatuses[*].restartCount}{","}{.status.containerStatuses[*].state.running.startedAt}{","}{end}' | sed '/^$/d' | sed 's/ /_/g'
+  kubectl get pods --all-namespaces -o=jsonpath='{range .items[*]}{"\n"}{.metadata.namespace}{","}{.metadata.name}{","}{.spec.containers[*].image}{","}{.status.hostIP}{","}{.status.phase}{","}{.status.containerStatuses[*].ready}{","}{.status.containerStatuses[*].restartCount}{","}{.status.containerStatuses[*].state.running.startedAt}{","}{end}' | sed '/^$/d' | sed 's/ /_/g'
 }
 
 kgpod() {
   kubectl get pods --all-namespaces | grep "$1" | grep Running | awk '{print $2, "-n", $1}' | xargs kubectl get pod -o json
 }
 
+# Get all pods with substring
 function _kpod() {
   local substring=$1
   shift
-  if [ -n $substring ]; then 
-  kubectl get pods --all-namespaces $@ | grep $substring | awk '{print $2}' | head -n 1
+  if [ -n $substring ]; then
+    kubectl get pods --all-namespaces $@ | grep $substring | awk '{print $2}' | head -n 1
   else
-  echo
+    echo
   fi
 }
 
@@ -132,74 +163,25 @@ function kterm() {
   [[ -n $pod ]] && kubectl get pod ${pod} -o go-template="{{range .status.containerStatuses}}{{.lastState.terminated.message}}{{end}}" $@
 }
 
-function certinfo() {
-cfssl certinfo -domain $1
-}
-
-function showcert() {
-openssl s_client -connect $1:443 -showcerts </dev/null 2>/dev/null |openssl x509 -outform PEM
-}
-
 function klogs() {
-kubectl get pod --all-namespaces | grep $1 | tail -n 1 | awk '{system("kubectl logs -n "$1" "$2)}' 
-}
-function klog() {
-  local substring=$1
-  shift
-  local pod=$(_kpod $substring $@)
-  [[ -n $pod ]] && kubectl logs ${pod} $@
-}
-function kpod() {
-  local pod=$(_kpod $1)
-  shift
-  kubectl describe pod ${pod} $@
+  kubectl get pod --all-namespaces | grep $1 | tail -n 1 | awk '{system("kubectl logs -n "$1" "$2)}' 
 }
 
-function kdel() {
-  local pod=$(_kpod $1)
-  shift
-  kubectl delete pod ${pod}
+# --- PKI ---
+function certinfo() {
+  openssl x509 -text -noout <$1
 }
 
-function krm() {
-  kubectl delete service $@
-  kubectl delete deployment $@
-  kubectl delete ingress $@
-  kubectl delete serviceaccount $@
+function certmatch() {
+  if [[ -z $1 ]] || [[ -z $2 ]] ; then
+    echo "Usage: certmatch private_key_file public_key_file"
+    return 1
+  fi
+  diff <( ssh-keygen -y -e -f "$1" ) <( ssh-keygen -y -e -f "$2" )
 }
 
-function knode() {
-  kubectl get nodes --no-headers | grep Ready | head -n 1 | awk '{print $1}'
-}
-
-
-function kexe() {
-  kubectl exec -it $(_kpod $1) bash
-}
-
-function kbump() {
-  local f=$1
-  kubectl delete -f ${f}
-  kubectl create -f ${f}
-}
-function ksvc() {
-  kubectl get svc | grep "$1"
-}
-function kweave() {
-
-
-kubectl port-forward -n weave "$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')" 4040 && open http:/localhost:4040
-}
-#
-# To NOT have sudo when using docker do this before sourcing this file:
-# export DOCKER_CMD=docker
-#
-if [ -z "$DOCKER_CMD" ]; then
-    DOCKER_CMD="sudo docker "
-fi
-
-function cf() {
-  tr -s ' ' | cut -d ' ' -f $1
+function certshow() {
+  openssl s_client -connect $1:443 -showcerts </dev/null 2>/dev/null |openssl x509 -outform PEM
 }
 
 # f X Y : get the Xth whitespace separated field from the Yth line
@@ -207,38 +189,38 @@ function f() {
   local line=${2:-1}
   awk "{print \$${1}}" | sed "${line}q;d"
 }
-##################### URLS ##################
+
+# --- URLS ---
 function url_ok {
   curl -siLk $1  2>&1 > /dev/null
   return $?
 }
+
 function httpcode() {
   curl -sL -w "%{http_code}\\n" $1 -o /dev/null
 }
+
 function url_exists() {
   local respcode=$(curl -ikLs --write-out "%{http_code}\n" --output /dev/null $1)
   return `expr $respcode - 200`
 }
 
+# recusive string replace
 function rr() {
   find . -type f -name '*.yaml' -exec sed -i '' s/$1/$2/ {} +
 }
 
+# recusively remove trailing whitespace (FIXME: Safe for binary ?)
 function rwhitespace() {
-#find . -type f -exec grep -Il "" {} \; 
-find . -type f -print0 | xargs -0 perl -pi -e 's/ +$//'
+  find . -type f -print0 | xargs -0 perl -pi -e 's/ +$//'
 }
 
-#TODO
-# - something to save last command to file for reference
-# - alternative to ping that returns 0 if ping works (e.g. alive www.foo.com)
 
-########################################################################
-# MAC ONLY
-########################################################################
+# --- MacOS
 function term() {
-open -a Terminal "`pwd`"
+  open -a Terminal "`pwd`"
 }
+
 ########################################################################
 # AWS
 ########################################################################
@@ -248,15 +230,8 @@ function awslogout() {
     unset aws_secret_access_key
     unset aws_access_key_id
 }
-function us-east-1() {
-  export AWS_REGION=us-east-1
-}
-########################################################################
-# ffmpeg                  
-########################################################################
-#- FIXME: need function to check if ffmpeg installed and suggest how based
-#- on OS
 
+# --- ffmpeg ---
 function wav2mp3() {
     for wavfile in "$@"
     do
@@ -281,6 +256,7 @@ function gradle() {
         $REAL_GRADLE $@
     fi
 }
+
 function gb() {
     go build #gradle build
 }
@@ -289,53 +265,27 @@ function gt() {
     go test ./... #gradle test
 }
 
-function gw() {
-    ./gradlew $@
-}
 
-function gwit() {
-    gradle integrationTest $@
-}
-function gwp() {
-    ./gradlew publishToMavenLocal $@
-}
-
-########################################################################
-#  cassandra              
-########################################################################
+#  --- cassandra ---
 #- Run a sample query against cqlsh
 #- pass optional params to override defaults.  e.g. dks 10.0.2.33 2229
 function dks() { 
     echo "describe keyspaces;" | cqlsh "$@" 
 }
 
-########################################################################
-#  Mesosphere         
-########################################################################
+# --- dcos ---
 function ma() {
     dcos marathon app add $1.json
 }
+
 function mesosinfo() {
   dcos task log --follow $1
 }
-########################################################################
-#  zentry functions
-########################################################################
-#- apt install all packages required for zentry
-function apt-install-zentry() {
-    sudo apt-get install git curl wget build-essential python-dev python-pip python-virtualenv libev4 libev-dev libffi-dev libssl-dev -y
-}
 
-
-#- Perform unit tests for core-ui/core-api/authn
-function utestit() {
-    find . -name __pycache__ -type d -print0|xargs -0 rm -fr --
-    /bin/cp local/__init__.py.default local/__init__.py
-    python -m pytest --junitxml=./junit.xml --cov . tests
-}
-########################################################################
-#  docker functions
-########################################################################
+# ---  docker ---
+if [ -z "$DOCKER_CMD" ]; then
+    DOCKER_CMD="sudo docker "
+fi
 function ddump() {
 docker history --no-trunc "$1" | \
 sed -n -e 's,.*/bin/sh -c #(nop) \(MAINTAINER .*[^ ]\) *0 B,\1,p' | \
@@ -352,6 +302,7 @@ VOLUME {{$e}}
 {{with .Config.Cmd}}CMD {{json .}}{{end}}
 {{with .Config.OnBuild}}ONBUILD {{json .}}{{end}}' "$1"
 }
+
 #- cleans up space
 function dsize() {
   if [ -z "$1" ] ; then
@@ -361,25 +312,13 @@ function dsize() {
   local id=$(docker inspect -f "{{.Id}}" $1)
   du -d 2 -h /var/lib/docker/devicemapper | grep $id
 }
+
 function dcu() {
   docker-compose up
 }
+
 function dcd() {
   docker-compose down
-}
-function indocker() {
-  IMAGE_NAME=docker_tmp_deleteme
-
-  if [ ! -z "$1" ] ; then
-    IMAGE_NAME=$1
-  else
-    if [ ! -e Dockerfile ] ; then
-      echo "There is no Dockerfile in this directory."
-      return
-    fi
-    $DOCKER_CMD build -t ${IMAGE_NAME} .
-  fi
-  $DOCKER_CMD run -v $PWD:/app --workdir /app --rm -it ${IMAGE_NAME} sh
 }
 
 function dclean() {
@@ -387,6 +326,7 @@ function dclean() {
   $DOCKER_CMD rmi $(docker images -q -f "dangling=true")
   $DOCKER_CMD images -aq | xargs -n 10 docker rmi
 }
+
 function dstopall() {
   $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
 }
@@ -396,18 +336,21 @@ function dall() {
     $DOCKER_CMD ps -a
 }
 
+function dps() {
+ $DOCKER_CMD ps
+}
+
 function drm() {
   $DOCKER_CMD stop $($DOCKER_CMD ps -a -q)
   $DOCKER_CMD rm -f $($DOCKER_CMD ps -a -q)
 }
-function dps() {
- $DOCKER_CMD ps
- }
+
 #- remove all images
 function drma() {
     drm
     $DOCKER_CMD rmi -f $($DOCKER_CMD images -q)
 }
+
 #- logout
 function dlogout() {
     if [ -e ~/.docker/config.json ]; then
@@ -418,23 +361,6 @@ function dlogout() {
 #- Restart Docker Daemon
 function kickdocker() {
     sudo service docker.io restart
-}
-
-#- docker-machine alias
-function dm() {
-    docker-machine $@
-}
-
-#- Install latest docker
-function dupgrade2() {
-    sudo add-apt-repository ppa:docker-maint/testing
-    sudo apt-get update
-    sudo apt-get install docker.io -y
-}
-
-#- Shorthand for upgrading docker to latest version
-function dupgrade() {
-    wget -qO- https://get.docker.com/ | sh
 }
 
 #- Conveniece method to run docer commands as sudo
@@ -463,21 +389,12 @@ function dkill() {
     $DOCKER_CMD rm $1 2>&1 > /dev/null
 }
 
-#-
-#- Kill everything in docker
-#-
+# Kill everything in docker
 function dkilla() {
     $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker kill
     $DOCKER_CMD ps -a | awk '{print $1}' |grep -v CONTAINER | xargs docker rm
     drma
 }
-
-#- Bump docker toolbox
-function docker-machine-restart() {
-    docker-machine restart default    
-    eval $(docker-machine env default)
-}
-
 
 #- Show all docker process, optional input match string e.g. dpa flasky
 function dpa() { 
@@ -488,16 +405,8 @@ function dpa() {
     fi
 }
 
-#- Conveniece method to build a container                          
-function db() { $DOCKER_CMD build -t $1 . ;}
-function dbnc() { $DOCKER_CMD build --no-cache -t $1 . ;}
-
 #- Conveniece method to show logs in a given container             
 function dl() { $DOCKER_CMD logs $1 ;}
-
-#- Conveniece method to run an interactive disposable container w/ /tmp mapped
-function drt() { $DOCKER_CMD run --rm -v /tmp:/tmp -it ubuntu:trusty ;}
-function drtp() { $DOCKER_CMD run --rm -v /tmp:/tmp -it dj80hd/privates:trustyplus ;}
 
 #- Show report of volumes in each image (FIXME - IMPLEMENT)        
 function dv() { 
@@ -522,29 +431,6 @@ function di() {
     fi
 }
 
-#- Stop any containers matching input, no input -> stop all
-function dstop() {
-    if [ -z "$1" ]; then
-        for p in `$DOCKER_CMD ps|grep -v IMAGE | cut -d' ' -f 1` ; do 
-            echo "Stopping $p"
-            $DOCKER_CMD stop $p 
-        done
-    else
-        for p in `$DOCKER_CMD ps|grep $1 |cut -d' ' -f 1` ; do 
-            echo "Stopping $p"
-            $DOCKER_CMD stop $p 
-        done
-    fi
-}
-
-#- Stop and remove any containers matching input param
-function dprm() {
-    for p in `$DOCKER_CMD ps -a|grep $1 |cut -d' ' -f 1` ; do 
-        $DOCKER_CMD stop $p 
-        $DOCKER_CMD rm $p 
-    done
-}
-
 #- Delete all conatainers both running and stopped.
 function dprma() {
     for p in `$DOCKER_CMD ps -a|grep -v CONTAINER |cut -d' ' -f 1` ; do 
@@ -564,28 +450,7 @@ function dipa() {
     $DOCKER_CMD inspect --format '{{  .NetworkSettings.Ports  }}' $1
 }
 
-#- Get a cqlsh shell on a running container.  Input = container name.
-function cqltest() {
-    if [ -z "$1" ]; then
-       echo "USAGE: cqltest <docker name>"
-       echo "e.g.   cqltest dse"
-       exit 1
-    fi                    
-    P=`$DOCKER_CMD port $1 9160 |cut -d':' -f2`
-    cqlsh 127.0.0.1 $P
-}
-
-#-
-function dipp() {
-    #This did not work http://stackoverflow.com/questions/30342796/how-to-get-env-variable-when-doing-docker-inspect/30353018#30353018
-    if [ -z "$1" ]; then
-       echo "USAGE: dipp <docker name> <exposed port>"
-       echo "e.g.   dipp baremetal 22                 "
-       exit 1
-    fi                    
-    $DOCKER_CMD port $1 $2 |cut -d':' -f2
-}
-
+# docker build and push
 function dbandp() {
   if [ -z "$1" ]; then
     echo "you must specify a docker image"
@@ -595,42 +460,28 @@ function dbandp() {
   fi
 }
 
-#- ?
 function dhostport() {
     $DOCKER_CMD inspect $1 |grep HostPort | cut -d '"' -f 4
 }
 
-########################################################################
-# Ansible Stuff
-########################################################################
-#- Conveniece method to run ansible-playbook
+# --- Ansible ---
 function anp() { ansible-playbook "$@" ;}
-
-#- Convenience method to run ansible playbook locally
 function anpl() { ansible-playbook -c local "$@" ;}
 
-#- Dump all the playbooks in a given root directory
-function andump() {
-    for f in `find -f . |grep "\.yml"` ; do 
-        echo $f             
-        echo "-----------------------------------------------------"
-        cat $f
-        echo
-    done
-}
 
-
-########################################################################
-# GIT Stuff
-########################################################################
+# --- git ---
 function glog() {
   git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
 }
+
+# Pulls all branches ?
 function gpullall() {
   for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done
   git fetch --all
   git pull --all
 }
+
+# Push all tags and branches
 function gpushall() {
   git push --all
   git push --tags
@@ -654,7 +505,7 @@ function gmaster() {
 
 #- Put last commit on new branch
 function lastcommitnewbranch() {
-  git branch $1 jimi
+  git branch $1 jimi # FIXME: IS THIS LINE NEEDED?
   if [ -z "$1" ]; then
     echo "USAGE: lastcommitnewbranch newbranchname"
   else
@@ -664,22 +515,7 @@ function lastcommitnewbranch() {
   fi
 }
 
-#- force push a file to branch
-function gafp() {
-  local BRANCH=$2
-
-  if [ -z "${BRANCH}" ] ; then
-    BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  fi
-
-  if [ "$1" = "" ] || [ "${BRANCH}" = "" ] ; then
-    echo "You must specify a filename and a branch."
-  else
-    git add $1
-    git commit --amend --no-edit
-    git push origin ${BRANCH} --force-with-lease
-  fi
-}
+# --- jenkins ---
 
 #- Quick checkin of Jenkninsfile for Pipeline:
 function gjenkins() {
@@ -688,9 +524,6 @@ function gjenkins() {
   git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease
 }
 
-function jankins() {
-  git add Jenkinsfile && git commit -m Jankins && git push origin master      
-}
 
 #-Recusively remove all git info from a dir
 function gremove() {
@@ -723,16 +556,14 @@ function realmaster() {
   git fetch origin
   git reset --hard origin/master
 }
+
 function gdiff2() {
     git diff HEAD^ HEAD
 }
+
 function grebase() {
     git fetch
     git pull --rebase origin master
-}
-#- execute any git command with --no-pager so we can pipe the output
-function gitnp() {
-    git --no-pager "$@"
 }
 
 #- git blame with no pager - suitable to piping to other commands
@@ -749,9 +580,11 @@ function blameuser() {
         git log --pretty="%H" --author="$1" | while read commit_hash; do git show --oneline --name-only $commit_hash | tail -n+2; done | sort | uniq
     fi
 }
+
 function glbranches() {
   git for-each-ref --format='%(authorname) %09 %(refname)' | sort -k3n -k4n
 }
+
 #- Worker function for blamealls
 function blameall() {
     for f in `git ls-tree --full-tree -r HEAD |awk '{print $4}'`; do
@@ -765,6 +598,7 @@ function blamealls() {
     #trims leading/tailing whitespace
     blameall |perl -e 'while(<>){ print "$1\n" if /\(([\w ]+)\s+20/;}'|sort -n |awk '{$1=$1};1'|uniq -c
 }
+
 function gs() {
     pwd && git status
 }
@@ -777,6 +611,7 @@ function gmerge() {
     git merge -m "$1" $1
   fi
 }
+
 function oldbranches() {
   for b in $(git branch -r | sed 's/origin\///') ; do
     git checkout $b > /dev/null 2>&1
@@ -785,13 +620,16 @@ function oldbranches() {
     fi
   done
 }
+
 function goldbranches() {
   for x in $(git branch -r | grep -v 'origin/HEAD' | awk '{print $1}' ); do git show --pretty=format:"%ai $x %h %an %s" --no-patch $x; echo; done | sort
 }
+
 #- Reset last commit
 function grlc() {
   git reset HEAD^
 }
+
 #- Convenience method to use git log
 function gln() {
     if [ -z "$1" ]; then
@@ -828,7 +666,7 @@ function greadme() {
 function gitme() {
     git config --global core.editor /usr/local/bin/vim
     git config --global user.email "jim.werwath@uptake.com"
-    git config --global user.name "Jimi Werwath"           
+    git config --global user.name "Jimi Werwath"
     git config --global alias.co checkout
     git config --global alias.br branch
     git config --global alias.ci commit
@@ -840,7 +678,7 @@ function gitme() {
     echo '.*~' >> ~/.gitignore_global
 }
 
-#- Squash last n local commits:
+# Squash last n local commits:
 function gsquash() {
     if [ -z "$1" ]; then
         echo "you must specify the number of commits to squash:"
@@ -856,10 +694,12 @@ function gsquash() {
     local msg="${@:2}"
     git commit -m "${msg}"
 }
+
 function gmakeremote() {
   git fetch orgin
   git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
 }
+
 function gapc() {
   FILES=.
   COMMENT=more
@@ -870,9 +710,10 @@ function gapc() {
   if [ ! -z "$2" ]; then
     COMMENT=$@
   fi
-  git commit -m "${COMMENT}"             
+  git commit -m "${COMMENT}"
   git push origin $(git rev-parse --abbrev-ref HEAD) 
 }
+
 # Git force push commit
 function gfpc() {
   if [ ! -z "$1" ]; then
@@ -885,6 +726,7 @@ function gfpc() {
 function gplc() {
   git pull origin $(git rev-parse --abbrev-ref HEAD)
 }
+
 function gpc() {
   git push origin $(git rev-parse --abbrev-ref HEAD)
 }
@@ -902,6 +744,7 @@ function gdrbranch() {
     git branch -r | cut -c 10- |grep $1 | xargs git push origin --delete
   fi
 }
+
 #- Delete a tag
 function gdtag() {
     if [ -z "$1" ]; then
@@ -911,6 +754,7 @@ function gdtag() {
    git push --delete origin $1
    git tag -d $1
 }
+
 #- Delete a branch locally and remotely
 function gdbranch() {
     if [ -z "$1" ]; then
@@ -920,7 +764,8 @@ function gdbranch() {
     git push origin --delete $1
     git branch -D $1
 }
-export -f gdbranch 
+
+export -f gdbranch
 
 #- Ammend a commit without changing message
 function gmend() {
@@ -1805,4 +1650,6 @@ LH=http://127.0.0.1
 #    if echo $needle | grep -F = &>/dev/null
 #
 # e.g. color command --args
+# 
+# = multi-line list
 color()(set -o pipefail;"$@" 2>&1>&3|sed $'s,.*,\e[31m&\e[m,'>&2)3>&1
